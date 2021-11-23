@@ -1,5 +1,7 @@
+using Maple.Blackboard;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Maple.Nodes
@@ -40,6 +42,9 @@ namespace Maple.Nodes
         protected abstract void OnEnter();
         protected abstract void OnExit();
         protected abstract NodeResult OnTick();
+
+        public virtual void UpdateBlackboardValue(BlackboardEntry entry) { }
+        public virtual void UnlinkBlackboardValue(BlackboardEntry entry) { }
 
         public NodeResult Tick()
         {
