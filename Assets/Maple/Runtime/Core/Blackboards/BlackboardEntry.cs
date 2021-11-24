@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Maple.Blackboard
+namespace Maple.Blackboards
 {
     public enum BlackboardEntryType { None = 0, Bool, Float, GameObject, Int, String, Vector }
 
@@ -11,10 +11,10 @@ namespace Maple.Blackboard
     {
         public string Name { get; private set; }
         public object Value { get; private set; }
-        public BlackboardEntryType ValueType;
+        public BlackboardEntryType ValueType = BlackboardEntryType.None;
         public Blackboard Owner;
 
-        private List<BaseNode> m_Listeners = new List<BaseNode>();
+        private List<BlackboardKey> m_Listeners = new List<BlackboardKey>();
 
         private BlackboardEntry(string name, object value, Blackboard owner)
         {
@@ -69,29 +69,24 @@ namespace Maple.Blackboard
                 OnValueChanged(value);
         }
 
-        public void AddListener(BaseNode node)
+        public void AddListener(BlackboardKey key)
         {
-            if (!m_Listeners.Contains(node))
-                m_Listeners.Add(node);
+            if (!m_Listeners.Contains(key))
+                m_Listeners.Add(key);
         }
 
-        public void RemoveListener(BaseNode node)
+        public void RemoveListener(BlackboardKey key)
         {
-            if (m_Listeners.Contains(node))
+            if (m_Listeners.Contains(key))
             {
-                // Disconnect the listener's blackboard value
-                node.UnlinkBlackboardValue(this);
-
-                m_Listeners.Remove(node);
+                // Disconnect the listener
+                m_Listeners.Remove(key);
             }
         }
 
         public void ClearListeners()
         {
-            // Disconnect the listeners' blackboard values
-            foreach (var listener in m_Listeners)
-                listener.UnlinkBlackboardValue(this);
-
+            // Disconnect the listeners
             m_Listeners.Clear();
         }
 
@@ -100,7 +95,7 @@ namespace Maple.Blackboard
             Value = value;
 
             foreach (var listener in m_Listeners)
-                listener.UpdateBlackboardValue(this);
+                listener.UpdateEntryInfo(this);
         }
 
         private static bool TypeValid<T>()

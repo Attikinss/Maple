@@ -1,4 +1,4 @@
-using Maple.Blackboard;
+using Maple.Blackboards;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,12 +39,44 @@ namespace Maple.Nodes
 
         public virtual string IconPath { get; } = "Icons/User";
 
+        private List<BlackboardKey> m_BlackboardKeys = new List<BlackboardKey>();
+
         protected abstract void OnEnter();
         protected abstract void OnExit();
         protected abstract NodeResult OnTick();
 
-        public virtual void UpdateBlackboardValue(BlackboardEntry entry) { }
-        public virtual void UnlinkBlackboardValue(BlackboardEntry entry) { }
+        public static BaseNode Create<T>() where T : BaseNode
+        {
+            var node = ScriptableObject.CreateInstance<T>();
+            node.Initialise();
+
+            return node;
+        }
+
+        private void Initialise()
+        {
+            if (Owner.Blackboard == null)
+                return;
+
+            var bbkFields = GetType().GetFields().Where(field => field.FieldType.IsSubclassOf(typeof(BlackboardKey))).ToList();
+
+            foreach (var field in bbkFields)
+            {
+                var keyValue = field.GetValue(this) as BlackboardKey;
+                if (keyValue != null)
+                {
+                    // Add node's blackboard key to collection
+                    m_BlackboardKeys.Add(keyValue);
+
+                    // Find corresponding blackboard entry
+                    var bbEntry = Owner.Blackboard.Entries.Find(entry => entry.Name == keyValue.Name && entry.ValueType == keyValue.KeyType);
+
+                    // Add blackboard key as a listener for on value change updates
+                    if (bbEntry != null)
+                        bbEntry.AddListener(keyValue);
+                }
+            }
+        }
 
         public NodeResult Tick()
         {

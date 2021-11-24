@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Maple.Blackboard
+namespace Maple.Blackboards
 {
     // TODO: Refactor blackboard keys to ONLY be a key which looks up into an attached blackboard and pulls a value
 

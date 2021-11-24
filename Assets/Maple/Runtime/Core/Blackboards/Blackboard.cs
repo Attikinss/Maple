@@ -1,14 +1,13 @@
-﻿using Maple.Nodes;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace Maple.Blackboard
+namespace Maple.Blackboards
 {
     [System.Serializable]
     public class Blackboard
     {
         public string Name { get; private set; }
-        public List<BlackboardEntry> m_Entries = new List<BlackboardEntry>();
+        public List<BlackboardEntry> Entries = new List<BlackboardEntry>();
 
         public Blackboard(string name = "New Blackboard")
         {
@@ -26,18 +25,18 @@ namespace Maple.Blackboard
                 Debug.LogError($"BlackboardEntry ({name}): Cannot add entry - entry already exists!");
             }
 
-            m_Entries.Add(BlackboardEntry.Create(name, entryValue, this));
+            Entries.Add(BlackboardEntry.Create(name, entryValue, this));
         }
 
         public void AddEntry(BlackboardEntry entry)
         {
-            if (m_Entries.Contains(entry))
+            if (Entries.Contains(entry))
             {
                 Debug.LogError($"BlackboardEntry ({entry.Name}): Cannot add entry - entry already exists!");
                 return;
             }
 
-            m_Entries.Add(entry);
+            Entries.Add(entry);
         }
 
         public void RemoveEntry<T>(string name) => RemoveEntry(name, typeof(T));
@@ -53,7 +52,7 @@ namespace Maple.Blackboard
             }
 
             entry.ClearListeners();
-            m_Entries.Remove(entry);
+            Entries.Remove(entry);
         }
 
         public void UpdateEntryValue<T>(string name, T newValue)
@@ -74,7 +73,7 @@ namespace Maple.Blackboard
 
         private BlackboardEntry FindEntryByName(string name, System.Type valueType)
         {
-            foreach (var entry in m_Entries)
+            foreach (var entry in Entries)
             {
                 // Return the entry if the name and value type matches
                 if (entry.Name == name && entry.Value.GetType() == valueType)

@@ -1,4 +1,5 @@
-﻿using Maple.Nodes;
+﻿using Maple.Blackboards;
+using Maple.Nodes;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -11,6 +12,7 @@ namespace Maple
         public List<BaseNode> Nodes = new List<BaseNode>();
 
         public Root Root;
+        public Blackboard Blackboard;
 
         public bool Stopped { get; private set; } = true;
         public bool Paused { get; private set; } = false;
