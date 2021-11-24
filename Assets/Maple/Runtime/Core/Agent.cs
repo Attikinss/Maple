@@ -58,15 +58,33 @@ namespace Maple
             if (m_ForceAddAnimator && !TryGetComponent(out m_Animator))
                 m_Animator = gameObject.AddComponent<Animator>();
 
-            // Notify user that a behaviour tree asset has not been assigned to the agent
-            if (m_Tree == null)
-            {
-                Debug.LogWarning($"A behaviour tree has not been assigned for {gameObject.name}!");
-                return;
-            }
+            //// Notify user that a behaviour tree asset has not been assigned to the agent
+            //if (m_Tree == null)
+            //{
+            //    Debug.LogWarning($"A behaviour tree has not been assigned for {gameObject.name}!");
+            //    return;
+            //}
+            //
+            //// Deep clone tree
+            //RuntimeTree = m_Tree.Clone(gameObject.name);
 
-            // Deep clone tree
-            RuntimeTree = m_Tree.Clone(gameObject.name);
+            RuntimeTree = ScriptableObject.CreateInstance<BehaviourTree>();
+            RuntimeTree.SetAgent(this);
+
+            var root = BaseNode.Create<Root>(RuntimeTree);
+            var selector = BaseNode.Create<Selector>(RuntimeTree);
+
+            var loop = BaseNode.Create<Loop>(RuntimeTree);
+            var log = BaseNode.Create<Log>(RuntimeTree);
+
+            var wait = BaseNode.Create<Wait>(RuntimeTree);
+
+            var breakpoint = BaseNode.Create<Breakpoint>(RuntimeTree);
+
+            RuntimeTree.SetRoot(root);
+            root.SetChild(selector);
+            selector.AddChildren(loop, wait, breakpoint);
+            loop.SetChild(log);
         }
 
         public void DetectNoise(object source, float loudness)
@@ -74,10 +92,13 @@ namespace Maple
             Agent agent = source as Agent;
             if (agent)
             {
+                // Ignore noise event if source was self
                 if (agent == this)
                     return;
 
-                // Do something
+                // Find closest point on navmesh and then raycast to noise location
+                // If the length end point of the ray is roughly the where the noise
+                // event was triggered, then it is in range to hear
             }
 
             // Check other types and do something

@@ -45,9 +45,11 @@ namespace Maple.Nodes
         protected abstract void OnExit();
         protected abstract NodeResult OnTick();
 
-        public static BaseNode Create<T>() where T : BaseNode
+        public static T Create<T>(BehaviourTree owner, string title = "") where T : BaseNode
         {
             var node = ScriptableObject.CreateInstance<T>();
+            node.Owner = owner;
+            node.Title = string.IsNullOrWhiteSpace(title) ? typeof(T).Name : title;
             node.Initialise();
 
             return node;
@@ -55,6 +57,8 @@ namespace Maple.Nodes
 
         private void Initialise()
         {
+            Guid = System.Guid.NewGuid().ToString();
+
             if (Owner.Blackboard == null)
                 return;
 

@@ -1,5 +1,4 @@
-﻿using Maple.Nodes;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace Maple.Blackboards
@@ -7,7 +6,7 @@ namespace Maple.Blackboards
     public enum BlackboardEntryType { None = 0, Bool, Float, GameObject, Int, String, Vector }
 
     [System.Serializable]
-    public sealed class BlackboardEntry
+    public sealed class BlackboardEntry : ScriptableObject
     {
         public string Name { get; private set; }
         public object Value { get; private set; }
@@ -16,24 +15,32 @@ namespace Maple.Blackboards
 
         private List<BlackboardKey> m_Listeners = new List<BlackboardKey>();
 
-        private BlackboardEntry(string name, object value, Blackboard owner)
-        {
-            Name = name;
-            Value = value;
-            Owner = owner;
-
-            EnumFromType(value.GetType());
-        }
-
         public static BlackboardEntry Create<T>(string name, T value, Blackboard owner)
         {
+            // Ensure valid type is used
             if (!TypeValid<T>())
             {
                 Debug.LogError($"(Blackboard Entry - {name}): Cannot create entry - type not supported! [{typeof(T).Name}]");
                 return null;
             }
 
-            return new BlackboardEntry(name, value, owner);
+            // Ensure an owner blackboard is specified
+            if (owner == null)
+            {
+                Debug.LogError($"(Blackboard Entry {name}): Cannot create entry - no owner (Blackboard) specified!");
+                return null;
+            }
+
+            // Create instance and update values
+            var entry = ScriptableObject.CreateInstance<BlackboardEntry>();
+            entry.Name = name;
+            entry.ValueType = EnumFromType(typeof(T));
+            entry.Owner = owner;
+
+            // Ensure a value is assigned, even if it is a default value
+            entry.Value = value == null ? default(T) : value;
+
+            return entry;
         }
 
         public void SetName(string name)
@@ -46,23 +53,28 @@ namespace Maple.Blackboards
 
             Name = name;
 
-            // TODO: Update linked blackboard keys to reflect change
+            // Update listeners BlackboardKey name
+            foreach (var listener in m_Listeners)
+                listener.Name = name;
         }
 
         public void SetValue<T>(T value, bool setWithoutNotify = false)
         {
+            // Ensure types match
             if (value.GetType() != Value.GetType())
             {
                 Debug.LogError($"(Blackboard Entry - {Name}): Cannot change value - type mismatch!");
                 return;
             }
 
+            // Ensure type is valid
             if (!TypeValid<T>())
             {
                 Debug.LogError($"(Blackboard Entry - {Name}): Cannot change value - type not supported! [{typeof(T).Name}]");
                 return;
             }
 
+            // Change value and update listeners if need be
             if (setWithoutNotify)
                 Value = value;
             else

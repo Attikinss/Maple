@@ -3,15 +3,18 @@ using UnityEngine;
 
 namespace Maple.Blackboards
 {
-    [System.Serializable]
-    public class Blackboard
+    [System.Serializable, CreateAssetMenu(fileName = "New Blackboard", menuName = "Maple AI/Blackboard")]
+    public class Blackboard : ScriptableObject
     {
         public string Name { get; private set; }
         public List<BlackboardEntry> Entries = new List<BlackboardEntry>();
 
-        public Blackboard(string name = "New Blackboard")
+        public static Blackboard Create(string name = "New Blackboard")
         {
-            Name = name;
+            var blackboard = ScriptableObject.CreateInstance<Blackboard>();
+            blackboard.Name = name;
+
+            return blackboard;
         }
 
         public void AddEntry<T>(string name, T entryValue)

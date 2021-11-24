@@ -29,7 +29,7 @@ namespace Maple.Nodes
             if (executionOrder >= 0)
             {
                 // Clamp specified execution order
-                int nodePlacement = Mathf.Clamp(executionOrder, 0, m_Children.Count - 1);
+                int nodePlacement = Mathf.Clamp(executionOrder, 1, m_Children.Count);
 
                 // Insert node relative to the specified execution priority
                 m_Children.Insert(nodePlacement, node);
@@ -41,8 +41,7 @@ namespace Maple.Nodes
             else
             {
                 // Set execution order to last
-                // (the -1 is used to allow code to balance out both cases later with the +1)
-                executionOrder = m_Children.Count - 1;
+                executionOrder = m_Children.Count;
 
                 // Place node at end
                 m_Children.Add(node);

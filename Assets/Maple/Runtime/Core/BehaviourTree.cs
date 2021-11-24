@@ -6,13 +6,23 @@ using UnityEngine;
 
 namespace Maple
 {
+    [System.Serializable, CreateAssetMenu(fileName = "New BehaviourTree", menuName = "Maple AI/Behaviour Tree")]
     public class BehaviourTree : ScriptableObject
     {
         public Agent Agent { get; private set; }
-        public List<BaseNode> Nodes = new List<BaseNode>();
 
-        public Root Root;
-        public Blackboard Blackboard;
+        [SerializeField]
+        private List<BaseNode> m_Nodes = new List<BaseNode>();
+        
+        [SerializeField]
+        private Root m_Root;
+
+        [SerializeField]
+        private Blackboard m_Blackboard;
+
+        public List<BaseNode> Nodes { get => m_Nodes; }
+        public Root Root { get => m_Root; }
+        public Blackboard Blackboard { get => m_Blackboard; }
 
         public bool Stopped { get; private set; } = true;
         public bool Paused { get; private set; } = false;
@@ -57,7 +67,7 @@ namespace Maple
                 if (root != null)
                 {
                     // Set the root node of the cloned tree
-                    clone.Root = root;
+                    clone.m_Root = root;
 
                     // Find the cloned child of this node
                     var childNode = clone.Nodes.Find(itr => itr.Guid == root.GetChild().Guid);
@@ -121,8 +131,8 @@ namespace Maple
 
             if (Root == null)
             {
-                Root = root;
-                Root.Owner = this;
+                m_Root = root;
+                m_Root.Owner = this;
             }
         }
 
