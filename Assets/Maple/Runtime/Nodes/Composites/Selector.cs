@@ -48,7 +48,7 @@
                             // If node is still running set it as the running node
                             m_RunningNode = m_Children[m_RunningNodeIndex];
                         }
-                        else
+                        else if (result == NodeResult.Failure)
                         {
                             // This node will run again unless there are no child nodes left to tick
                             return (++m_RunningNodeIndex < m_Children.Count) ? NodeResult.Running : NodeResult.Failure;
