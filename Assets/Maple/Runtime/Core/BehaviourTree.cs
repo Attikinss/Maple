@@ -1,6 +1,7 @@
 ﻿using Maple.Blackboards;
 using Maple.Nodes;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using UnityEngine;
 
@@ -26,6 +27,27 @@ namespace Maple
 
         public bool Stopped { get; private set; } = true;
         public bool Paused { get; private set; } = false;
+
+#if UNITY_EDITOR
+        [UnityEditor.MenuItem("Tools/Maple AI/Create/Behaviour Tree")]
+        public static BehaviourTree CreateAsset()
+        {
+            // Create a default/empty tree instance
+            var tree = Create("New Behaviour Tree");
+
+            Utilities.Utilities.CreateAssetFromItem(tree);
+
+            return tree;
+        }
+#endif
+
+        public static BehaviourTree Create(string name)
+        {
+            var behaviourTree = ScriptableObject.CreateInstance<BehaviourTree>();
+            behaviourTree.name = name;
+
+            return behaviourTree;
+        }
 
         public void Start() => Stopped = false;
         public void Stop() => Stopped = false;

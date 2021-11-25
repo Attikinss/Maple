@@ -1,18 +1,33 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 namespace Maple.Blackboards
 {
-    [System.Serializable, CreateAssetMenu(fileName = "New Blackboard", menuName = "Maple AI/Blackboard")]
+    [System.Serializable]
     public class Blackboard : ScriptableObject
     {
         public string Name { get; private set; }
         public List<BlackboardEntry> Entries = new List<BlackboardEntry>();
 
-        public static Blackboard Create(string name = "New Blackboard")
+#if UNITY_EDITOR
+        [UnityEditor.MenuItem("Tools/Maple AI/Create/Blackboard")]
+        public static Blackboard CreateAsset()
+        {
+            // Create a default/empty tree instance
+            var blackboard = Create("New Blackboard");
+
+            Utilities.Utilities.CreateAssetFromItem(blackboard);
+
+            return blackboard;
+        }
+#endif
+
+        public static Blackboard Create(string name)
         {
             var blackboard = ScriptableObject.CreateInstance<Blackboard>();
             blackboard.Name = name;
+            blackboard.name = name;
 
             return blackboard;
         }

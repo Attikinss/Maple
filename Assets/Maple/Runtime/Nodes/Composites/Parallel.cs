@@ -15,7 +15,10 @@ namespace Maple.Nodes
             //       Create list once then update on each tick
 
             foreach (var child in m_Children)
+            {
+                child.State = NodeResult.Running;
                 m_Results.Add(child.Guid, (int)NodeResult.Running);
+            }
         }
 
         protected override void OnExit()

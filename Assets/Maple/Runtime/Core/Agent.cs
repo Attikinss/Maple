@@ -9,6 +9,8 @@ namespace Maple
     [RequireComponent(typeof(NavMeshAgent))]
     public class Agent : MonoBehaviour, INoiseListener
     {
+        string TestString = "Hello, world!";
+
         /* --<| VARIABLES |>-- */
         [Tooltip("A behaviour tree asset created from the Maple tree editor is placed here and it will be cloned for use at runtime."), SerializeField]
         private BehaviourTree m_Tree;
@@ -59,7 +61,7 @@ namespace Maple
             if (m_ForceAddAnimator && !TryGetComponent(out m_Animator))
                 m_Animator = gameObject.AddComponent<Animator>();
 
-            // Notify user that a behaviour tree asset has not been assigned to the agent
+            /*// Notify user that a behaviour tree asset has not been assigned to the agent
             if (m_Tree == null)
             {
                 Debug.LogWarning($"A behaviour tree has not been assigned for {gameObject.name}!");
@@ -67,7 +69,26 @@ namespace Maple
             }
             
             // Deep clone tree
-            RuntimeTree = m_Tree.Clone(gameObject.name);
+            RuntimeTree = m_Tree.Clone(gameObject.name);*/
+
+            var blackboard = Blackboard.Create("New Blackboard");
+            blackboard.AddEntry("", TestString);
+
+            RuntimeTree = ScriptableObject.CreateInstance<BehaviourTree>();
+            RuntimeTree.SetAgent(this);
+            RuntimeTree.SetBlackboard(blackboard);
+
+            var root = BaseNode.Create<Root>(RuntimeTree);
+            var selector = BaseNode.Create<Sequence>(RuntimeTree);
+            var parallel = BaseNode.Create<Parallel>(RuntimeTree);
+            var wait = BaseNode.Create<Wait>(RuntimeTree);
+            var log1 = BaseNode.Create<Log>(RuntimeTree);
+            var log2 = BaseNode.Create<Log>(RuntimeTree);
+
+            RuntimeTree.SetRoot(root);
+            root.SetChild(selector);
+            selector.AddChildren(parallel, wait);
+            parallel.AddChildren(log1, log2);
         }
 
         public void DetectNoise(object source, float loudness)
