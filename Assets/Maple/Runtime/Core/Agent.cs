@@ -1,4 +1,5 @@
-﻿using Maple.Nodes;
+﻿using Maple.Blackboards;
+using Maple.Nodes;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
@@ -58,33 +59,15 @@ namespace Maple
             if (m_ForceAddAnimator && !TryGetComponent(out m_Animator))
                 m_Animator = gameObject.AddComponent<Animator>();
 
-            //// Notify user that a behaviour tree asset has not been assigned to the agent
-            //if (m_Tree == null)
-            //{
-            //    Debug.LogWarning($"A behaviour tree has not been assigned for {gameObject.name}!");
-            //    return;
-            //}
-            //
-            //// Deep clone tree
-            //RuntimeTree = m_Tree.Clone(gameObject.name);
-
-            RuntimeTree = ScriptableObject.CreateInstance<BehaviourTree>();
-            RuntimeTree.SetAgent(this);
-
-            var root = BaseNode.Create<Root>(RuntimeTree);
-            var selector = BaseNode.Create<Selector>(RuntimeTree);
-
-            var loop = BaseNode.Create<Loop>(RuntimeTree);
-            var log = BaseNode.Create<Log>(RuntimeTree);
-
-            var wait = BaseNode.Create<Wait>(RuntimeTree);
-
-            var breakpoint = BaseNode.Create<Breakpoint>(RuntimeTree);
-
-            RuntimeTree.SetRoot(root);
-            root.SetChild(selector);
-            selector.AddChildren(loop, wait, breakpoint);
-            loop.SetChild(log);
+            // Notify user that a behaviour tree asset has not been assigned to the agent
+            if (m_Tree == null)
+            {
+                Debug.LogWarning($"A behaviour tree has not been assigned for {gameObject.name}!");
+                return;
+            }
+            
+            // Deep clone tree
+            RuntimeTree = m_Tree.Clone(gameObject.name);
         }
 
         public void DetectNoise(object source, float loudness)

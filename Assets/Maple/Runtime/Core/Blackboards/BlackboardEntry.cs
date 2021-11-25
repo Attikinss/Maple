@@ -84,7 +84,10 @@ namespace Maple.Blackboards
         public void AddListener(BlackboardKey key)
         {
             if (!m_Listeners.Contains(key))
+            {
+                key.UpdateEntryInfo(this);
                 m_Listeners.Add(key);
+            }
         }
 
         public void RemoveListener(BlackboardKey key)

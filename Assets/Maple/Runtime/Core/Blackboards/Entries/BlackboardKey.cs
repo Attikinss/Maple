@@ -8,10 +8,11 @@ namespace Maple.Blackboards
     public abstract class BlackboardKey
     {
         // TODO: Make this a dropdown field of matching blackboard entries
-        public string Name;
+        public string Name = "";
         
         public BlackboardEntryType KeyType = BlackboardEntryType.None;
 
         public abstract void UpdateEntryInfo(BlackboardEntry entry);
+        public abstract T GetValue<T>();
     }
 }

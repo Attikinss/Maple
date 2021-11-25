@@ -105,6 +105,11 @@ namespace Maple
             return clone;
         }
 
+        public void SetBlackboard(Blackboard blackboard)
+        {
+            m_Blackboard = blackboard;
+        }
+
         public void SetAgent(Agent agent)
         {
             if (Agent != null)

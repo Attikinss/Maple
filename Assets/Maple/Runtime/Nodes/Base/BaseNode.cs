@@ -67,18 +67,53 @@ namespace Maple.Nodes
             foreach (var field in bbkFields)
             {
                 var keyValue = field.GetValue(this) as BlackboardKey;
-                if (keyValue != null)
+                if (keyValue == null)
                 {
-                    // Add node's blackboard key to collection
-                    m_BlackboardKeys.Add(keyValue);
+                    // Gross.
+                    var fieldType = field.FieldType;
+                    if (fieldType == typeof(BlackboardKeyBool))
+                    {
+                        keyValue = new BlackboardKeyBool();
+                        keyValue.KeyType = BlackboardEntryType.Bool;
+                    }
+                    else if (fieldType == typeof(BlackboardKeyFloat))
+                    {
+                        keyValue = new BlackboardKeyFloat();
+                        keyValue.KeyType = BlackboardEntryType.Float;
+                    }
+                    else if (fieldType == typeof(BlackboardKeyGameObject))
+                    {
+                        keyValue = new BlackboardKeyGameObject();
+                        keyValue.KeyType = BlackboardEntryType.GameObject;
+                    }
+                    else if (fieldType == typeof(BlackboardKeyInt))
+                    {
+                        keyValue = new BlackboardKeyInt();
+                        keyValue.KeyType = BlackboardEntryType.Int;
+                    }
+                    else if (fieldType == typeof(BlackboardKeyString))
+                    {
+                        keyValue = new BlackboardKeyString();
+                        keyValue.KeyType = BlackboardEntryType.String;
+                    }
+                    else if (fieldType == typeof(BlackboardKeyVector))
+                    {
+                        keyValue = new BlackboardKeyVector();
+                        keyValue.KeyType = BlackboardEntryType.Vector;
+                    }
 
-                    // Find corresponding blackboard entry
-                    var bbEntry = Owner.Blackboard.Entries.Find(entry => entry.Name == keyValue.Name && entry.ValueType == keyValue.KeyType);
-
-                    // Add blackboard key as a listener for on value change updates
-                    if (bbEntry != null)
-                        bbEntry.AddListener(keyValue);
+                    field.SetValue(this, keyValue);
                 }
+
+                // Add node's blackboard key to collection
+                m_BlackboardKeys.Add(keyValue);
+
+                // Find corresponding blackboard entry
+                var bbEntry = Owner.Blackboard.Entries.Find(entry => entry.Name == keyValue.Name && entry.ValueType == keyValue.KeyType);
+
+                // Add blackboard key as a listener for on value change updates
+                if (bbEntry != null)
+                    bbEntry.AddListener(keyValue);
             }
         }
 
