@@ -79,16 +79,21 @@ namespace Maple
             RuntimeTree.SetBlackboard(blackboard);
 
             var root = BaseNode.Create<Root>(RuntimeTree);
-            var selector = BaseNode.Create<Sequence>(RuntimeTree);
+            var sequence1 = BaseNode.Create<Sequence>(RuntimeTree);
             var parallel = BaseNode.Create<Parallel>(RuntimeTree);
-            var wait = BaseNode.Create<Wait>(RuntimeTree);
+            var sequence2 = BaseNode.Create<Sequence>(RuntimeTree);
+            var loop = BaseNode.Create<Loop>(RuntimeTree);
+            var wait1 = BaseNode.Create<Wait>(RuntimeTree);
+            var wait2 = BaseNode.Create<Wait>(RuntimeTree);
             var log1 = BaseNode.Create<Log>(RuntimeTree);
             var log2 = BaseNode.Create<Log>(RuntimeTree);
 
             RuntimeTree.SetRoot(root);
-            root.SetChild(selector);
-            selector.AddChildren(parallel, wait);
-            parallel.AddChildren(log1, log2);
+            root.SetChild(sequence1);
+            sequence1.AddChildren(parallel, wait1);
+            parallel.AddChildren(log1, loop);
+            loop.SetChild(sequence2);
+            sequence2.AddChildren(log2, wait2);
         }
 
         public void DetectNoise(object source, float loudness)
@@ -203,13 +208,17 @@ namespace Maple
         public virtual void AttachTree(BehaviourTree tree) => RuntimeTree = tree;       
         public virtual void DetachTree() => RuntimeTree = null;
 
-        public IEnumerator StartTree()
+        public IEnumerator StartTree(float tickInvertalSeconds = 0.0f)
         {
+            float time = 0.0f;
             RuntimeTree?.Start();
 
             while (RuntimeTree != null)
             {
-                RuntimeTree.Tick();
+                if (Time.time - time <= tickInvertalSeconds)
+                    RuntimeTree.Tick();
+                
+                time += Time.deltaTime;
                 yield return null;
             }
         }
