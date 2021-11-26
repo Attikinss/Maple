@@ -27,7 +27,7 @@
                     result = m_RunningNode.Tick();
 
                     // Clear running node if it's no longer running
-                    if (result != NodeResult.Running)
+                    if (result == NodeResult.Failure)
                     {
                         m_RunningNode = null;
 
