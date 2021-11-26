@@ -31,7 +31,13 @@
                         m_RunningNode = null;
 
                         // This node will run again unless there are no child nodes left to tick
-                        return (++m_RunningNodeIndex < m_Children.Count) ? NodeResult.Running : NodeResult.Failure;
+                        if (m_RunningNodeIndex + 1 < m_Children.Count)
+                        {
+                            result = NodeResult.Running;
+                            m_RunningNodeIndex++;
+                        }
+                        else
+                            result = NodeResult.Success;
                     }
                 }
                 else
@@ -44,25 +50,26 @@
 
                         switch (result)
                         {
-                            case NodeResult.Failure:
-                                {
-                                    // If one child node fails at any point, this node fails and exits
-                                    return NodeResult.Failure;
-                                }
-
                             case NodeResult.Running:
                                 {
                                     // If node is still running set it as the running node
                                     m_RunningNode = m_Children[m_RunningNodeIndex];
-
-                                    return NodeResult.Running;
+                                    break;
                                 }
 
                             case NodeResult.Success:
                                 {
                                     // If there are any more child nodes, tick this node
                                     // again, otherwise exit this node with success status
-                                    return (++m_RunningNodeIndex < m_Children.Count) ? NodeResult.Running : NodeResult.Success;
+                                    if (m_RunningNodeIndex + 1 < m_Children.Count)
+                                    {
+                                        result = NodeResult.Running;
+                                        m_RunningNodeIndex++;
+                                    }
+                                    else
+                                        result = NodeResult.Success;
+
+                                    break;
                                 }
 
                             default: break;
