@@ -48,6 +48,7 @@ namespace Maple.Nodes
         public static T Create<T>(BehaviourTree owner, string title = "") where T : BaseNode
         {
             var node = ScriptableObject.CreateInstance<T>();
+            owner?.Nodes.Add(node);
             node.Owner = owner;
             node.Title = string.IsNullOrWhiteSpace(title) ? typeof(T).Name : title;
             node.Initialise();
