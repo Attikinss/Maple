@@ -51,8 +51,11 @@ namespace Maple.Nodes
                 {
                     NodeResult result = m_Child.Tick();
 
+                    if (result != NodeResult.Running)
+                        m_CurrentLoops++;
+
                     // Return running until loop count is met
-                    return (++m_CurrentLoops < m_NumberOfLoops) ? NodeResult.Running : result;
+                    return (m_CurrentLoops < m_NumberOfLoops) ? NodeResult.Running : result;
                 }
             }
 
