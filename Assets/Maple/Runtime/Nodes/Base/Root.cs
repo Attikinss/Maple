@@ -24,7 +24,7 @@ namespace Maple.Nodes
             if (node == null)
             {
                 // Notify user that the action failed
-                Debug.LogError($"({Owner.Agent.gameObject.name}): Cannot set child for [{Title}] - node is null!");
+                Debug.LogError($"({Owner.Agent.gameObject.name}): Cannot set child for [{name}] - node is null!");
                 return;
             }
 

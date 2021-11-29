@@ -1,0 +1,157 @@
+#Toolbar {
+    flex-direction: row;
+    justify-content: center;
+    flex-shrink: 1;
+    flex-grow: 0;
+    -unity-text-align: upper-left;
+}
+
+#InspectorToggle {
+    flex-grow: 1;
+    -unity-text-align: middle-center;
+    -unity-font-style: normal;
+    flex-shrink: 1;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    border-left-color: rgb(0, 0, 0);
+    border-right-color: rgb(0, 0, 0);
+    border-top-color: rgb(0, 0, 0);
+    border-bottom-color: rgb(0, 0, 0);
+    flex-direction: row;
+    justify-content: center;
+}
+
+#BlackboardToggle {
+    flex-grow: 1;
+    -unity-text-align: middle-center;
+    -unity-font-style: normal;
+    flex-shrink: 1;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    border-left-color: rgb(0, 0, 0);
+    border-right-color: rgb(0, 0, 0);
+    border-top-color: rgb(0, 0, 0);
+    border-bottom-color: rgb(0, 0, 0);
+    flex-direction: row;
+    justify-content: center;
+}
+
+#TreeNameField {
+    flex-direction: row;
+    align-items: flex-start;
+}
+
+#unity-text-input {
+    background-color: rgba(0, 0, 0, 0);
+    align-items: flex-start;
+    flex-direction: row;
+    justify-content: flex-start;
+    flex-shrink: 1;
+    flex-grow: 0;
+    flex-basis: auto;
+    min-width: 100px;
+    font-size: 20px;
+}
+
+#InspectorView {
+    flex-grow: 1;
+    background-color: rgb(56, 56, 56);
+}
+
+.unity-toggle__label {
+    flex-grow: 1;
+    -unity-text-align: middle-center;
+    -unity-font-style: normal;
+    flex-shrink: 0;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    border-left-color: rgb(0, 0, 0);
+    border-right-color: rgb(0, 0, 0);
+    border-top-color: rgb(0, 0, 0);
+    border-bottom-color: rgb(0, 0, 0);
+    flex-direction: row;
+    justify-content: center;
+    flex-basis: auto;
+}
+
+#InspectorToggle > .unity-toggle__input {
+    flex-grow: 0;
+    -unity-text-align: middle-center;
+    -unity-font-style: normal;
+    flex-shrink: 1;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    border-left-color: rgb(0, 0, 0);
+    border-right-color: rgb(0, 0, 0);
+    border-top-color: rgb(0, 0, 0);
+    border-bottom-color: rgb(0, 0, 0);
+    flex-direction: row;
+    justify-content: center;
+}
+
+#BlackboardToggle > .unity-toggle__input {
+    flex-grow: 0;
+    -unity-text-align: middle-center;
+    -unity-font-style: normal;
+    flex-shrink: 1;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    border-left-color: rgb(0, 0, 0);
+    border-right-color: rgb(0, 0, 0);
+    border-top-color: rgb(0, 0, 0);
+    border-bottom-color: rgb(0, 0, 0);
+    flex-direction: row;
+    justify-content: center;
+}
+
+#TreeSelectionField > .unity-base-field__label {
+    -unity-text-align: upper-center;
+    flex-shrink: 0;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    flex-grow: 0;
+    margin-left: -35px;
+    margin-right: -30px;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+#TreeSelectionField > .unity-base-field__input {
+    -unity-text-align: upper-center;
+    flex-shrink: 0;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: stretch;
+    flex-grow: 1;
+}

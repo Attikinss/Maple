@@ -1,4 +1,5 @@
-﻿using System.IO;
+using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 namespace Maple.Utilities
@@ -44,6 +45,31 @@ namespace Maple.Utilities
 #if UNITY_EDITOR
             UnityEditor.AssetDatabase.RemoveObjectFromAsset(subasset);
 #endif
+        }
+
+        public static List<T> FindAssetsOfType<T>() where T : ScriptableObject
+        {
+            List<T> assets = new List<T>();
+
+#if UNITY_EDITOR
+            // Find the guids of all assets with matching type
+            string[] guids = UnityEditor.AssetDatabase.FindAssets(string.Format("t:{0}", typeof(T)));
+
+            for (int i = 0; i < guids.Length; i++)
+            {
+                // Get asset location
+                string assetPath = UnityEditor.AssetDatabase.GUIDToAssetPath(guids[i]);
+                
+                // Attemp to load asset to check if it exists
+                T asset = UnityEditor.AssetDatabase.LoadAssetAtPath<T>(assetPath);
+
+                // If the asset exists add it to the list
+                if (asset != null)
+                    assets.Add(asset);
+            }
+#endif
+
+            return assets;
         }
     }
 }

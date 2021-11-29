@@ -1,4 +1,4 @@
-﻿using Maple.Blackboards;
+using Maple.Blackboards;
 using Maple.Nodes;
 using System.Collections.Generic;
 using System.IO;
@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Maple
 {
-    [System.Serializable, CreateAssetMenu(fileName = "New BehaviourTree", menuName = "Maple AI/Behaviour Tree")]
+    [System.Serializable]
     public class BehaviourTree : ScriptableObject
     {
         public Agent Agent { get; private set; }
@@ -33,9 +33,11 @@ namespace Maple
         public static BehaviourTree CreateAsset()
         {
             // Create a default/empty tree instance
-            var tree = Create("New Behaviour Tree");
+            var tree = Create("New BehaviourTree");
 
             Utilities.Utilities.CreateAssetFromItem(tree);
+            UnityEditor.AssetDatabase.AddObjectToAsset(tree.Root, tree);
+            UnityEditor.AssetDatabase.SaveAssets();
 
             return tree;
         }
@@ -45,6 +47,7 @@ namespace Maple
         {
             var behaviourTree = ScriptableObject.CreateInstance<BehaviourTree>();
             behaviourTree.name = name;
+            behaviourTree.m_Root = BaseNode.Create<Root>(behaviourTree);
 
             return behaviourTree;
         }
@@ -151,18 +154,6 @@ namespace Maple
             Agent = null;
         }
 
-        public void SetRoot(Root root)
-        {
-            // TODO: Find a way to disconnect previous root and store
-            //       it somewhere so that it can be resused elsewhere
-
-            if (Root == null)
-            {
-                m_Root = root;
-                m_Root.Owner = this;
-            }
-        }
-
         public void TransferTo(Agent agent)
         {
             if (agent == null)
@@ -180,6 +171,50 @@ namespace Maple
             Agent?.DetachTree();
             Agent = agent;
             Agent.AttachTree(this);
+        }
+
+        public void AddNode(BaseNode node)
+        {
+            if (m_Nodes.Contains(node))
+                return;
+
+#if UNITY_EDITOR
+            bool isAsset = UnityEditor.AssetDatabase.GetAssetPath(this).Length > 0;
+            if (isAsset)
+                UnityEditor.Undo.RecordObject(this, "(Behaviour Tree): Node added");
+#endif
+            
+            m_Nodes.Add(node);
+            
+#if UNITY_EDITOR
+            if (isAsset)
+            {
+                UnityEditor.AssetDatabase.SaveAssets();
+                UnityEditor.AssetDatabase.AddObjectToAsset(node, this);
+            }
+#endif
+        }
+
+        public void RemoveNode(BaseNode node)
+        {
+            if (!m_Nodes.Contains(node))
+                return;
+
+#if UNITY_EDITOR
+            bool isAsset = UnityEditor.AssetDatabase.GetAssetPath(this).Length > 0;
+            if (isAsset)
+                UnityEditor.Undo.RecordObject(this, "(Behaviour Tree): Node removed");
+#endif
+
+            m_Nodes.Remove(node);
+
+#if UNITY_EDITOR
+            if (isAsset)
+            {
+                UnityEditor.AssetDatabase.RemoveObjectFromAsset(node);
+                UnityEditor.AssetDatabase.SaveAssets();
+            }
+#endif
         }
     }
 }

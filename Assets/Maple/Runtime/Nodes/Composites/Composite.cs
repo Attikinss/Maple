@@ -14,14 +14,14 @@ namespace Maple.Nodes
             if (node == null)
             {
                 // Notify user that the action failed
-                Debug.LogError($"({Owner.Agent.gameObject.name}): Cannot add child to [{Title}] - node is null!");
+                Debug.LogError($"({Owner.Agent.gameObject.name}): Cannot add child to [{name}] - node is null!");
                 return;
             }
 
             if (m_Children.Contains(node))
             {
                 // Notify user that the action failed
-                Debug.LogError($"({Owner.Agent.gameObject.name}): Cannot add child to [{Title}] - node is already a child!");
+                Debug.LogError($"({Owner.Agent.gameObject.name}): Cannot add child to [{name}] - node is already a child!");
                 return;
             }
 
@@ -62,14 +62,14 @@ namespace Maple.Nodes
             if (node == null)
             {
                 // Notify user that the action failed
-                Debug.LogError($"({Owner.Agent.gameObject.name}): Cannot remove child from [{Title}] - node is null!");
+                Debug.LogError($"({Owner.Agent.gameObject.name}): Cannot remove child from [{name}] - node is null!");
                 return;
             }
 
             if (!m_Children.Contains(node))
             {
                 // Notify user that the action failed
-                Debug.LogError($"({Owner.Agent.gameObject.name}): Cannot remove child from [{Title}] - node isn't a child!");
+                Debug.LogError($"({Owner.Agent.gameObject.name}): Cannot remove child from [{name}] - node isn't a child!");
                 return;
             }
 

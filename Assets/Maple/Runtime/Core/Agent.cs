@@ -74,11 +74,10 @@ namespace Maple
             var blackboard = Blackboard.Create("New Blackboard");
             blackboard.AddEntry("", TestString);
 
-            RuntimeTree = ScriptableObject.CreateInstance<BehaviourTree>();
+            RuntimeTree = BehaviourTree.Create($"({gameObject.name}): Behaviour Tree");
             RuntimeTree.SetAgent(this);
             RuntimeTree.SetBlackboard(blackboard);
 
-            var root = BaseNode.Create<Root>(RuntimeTree);
             var sequence1 = BaseNode.Create<Sequence>(RuntimeTree);
             var parallel = BaseNode.Create<Parallel>(RuntimeTree);
             var sequence2 = BaseNode.Create<Sequence>(RuntimeTree);
@@ -88,8 +87,7 @@ namespace Maple
             var log1 = BaseNode.Create<Log>(RuntimeTree);
             var log2 = BaseNode.Create<Log>(RuntimeTree);
 
-            RuntimeTree.SetRoot(root);
-            root.SetChild(sequence1);
+            RuntimeTree.Root.SetChild(sequence1);
             sequence1.AddChildren(parallel, wait1);
             parallel.AddChildren(log1, loop);
             loop.SetChild(sequence2);

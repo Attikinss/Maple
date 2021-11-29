@@ -8,9 +8,6 @@ namespace Maple.Nodes
 {
     public abstract class BaseNode : ScriptableObject, IComparer<BaseNode>, IComparable<BaseNode>
     {
-        /// <summary>Used to debug nodes at runtime and display their names in the graph tool.</summary>
-        public string Title;
-
         /// <summary>The unique ID used to handle manipulation of nodes both in code and in the graph tool.</summary>
         public string Guid;
         
@@ -29,10 +26,10 @@ namespace Maple.Nodes
         public int ExecutionOrder;
 
         /// <summary>
-        /// The saved dimensions and position of the node when re-loaded and displayed in the graph tool.
+        /// The saved position of the node when re-loaded and displayed in the graph tool.
         /// <br>TODO: Move this somewhere else</br>
         /// </summary>
-        public Rect GraphDimensions;
+        public Vector2 Position;
 
         /// <summary>The behaviour tree in which the node belongs to.</summary>
         public BehaviourTree Owner;
@@ -48,9 +45,25 @@ namespace Maple.Nodes
         public static T Create<T>(BehaviourTree owner, string title = "") where T : BaseNode
         {
             var node = ScriptableObject.CreateInstance<T>();
-            owner?.Nodes.Add(node);
+
+            owner?.AddNode(node);
             node.Owner = owner;
-            node.Title = string.IsNullOrWhiteSpace(title) ? typeof(T).Name : title;
+            node.name = string.IsNullOrWhiteSpace(title) ? typeof(T).Name : title;
+            node.Initialise(); 
+
+            return node;
+        }
+
+        public static BaseNode Create(Type type)
+        {
+            if (!type.IsSubclassOf(typeof(BaseNode)))
+            {
+                Debug.LogError($"");
+                return null;
+            }
+
+            var node = (BaseNode)ScriptableObject.CreateInstance(type);
+            node.name = type.Name;
             node.Initialise();
 
             return node;
