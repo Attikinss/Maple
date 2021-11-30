@@ -9,8 +9,6 @@ namespace Maple
     [RequireComponent(typeof(NavMeshAgent))]
     public class Agent : MonoBehaviour, INoiseListener
     {
-        string TestString = "Hello, world!";
-
         /* --<| VARIABLES |>-- */
         [Tooltip("A behaviour tree asset created from the Maple tree editor is placed here and it will be cloned for use at runtime."), SerializeField]
         private BehaviourTree m_Tree;
@@ -61,7 +59,7 @@ namespace Maple
             if (m_ForceAddAnimator && !TryGetComponent(out m_Animator))
                 m_Animator = gameObject.AddComponent<Animator>();
 
-            /*// Notify user that a behaviour tree asset has not been assigned to the agent
+            // Notify user that a behaviour tree asset has not been assigned to the agent
             if (m_Tree == null)
             {
                 Debug.LogWarning($"A behaviour tree has not been assigned for {gameObject.name}!");
@@ -69,29 +67,7 @@ namespace Maple
             }
             
             // Deep clone tree
-            RuntimeTree = m_Tree.Clone(gameObject.name);*/
-
-            var blackboard = Blackboard.Create("New Blackboard");
-            blackboard.AddEntry("", TestString);
-
-            RuntimeTree = BehaviourTree.Create($"({gameObject.name}): Behaviour Tree");
-            RuntimeTree.SetAgent(this);
-            RuntimeTree.SetBlackboard(blackboard);
-
-            var sequence1 = BaseNode.Create<Sequence>(RuntimeTree);
-            var parallel = BaseNode.Create<Parallel>(RuntimeTree);
-            var sequence2 = BaseNode.Create<Sequence>(RuntimeTree);
-            var loop = BaseNode.Create<Loop>(RuntimeTree);
-            var wait1 = BaseNode.Create<Wait>(RuntimeTree);
-            var wait2 = BaseNode.Create<Wait>(RuntimeTree);
-            var log1 = BaseNode.Create<Log>(RuntimeTree);
-            var log2 = BaseNode.Create<Log>(RuntimeTree);
-
-            RuntimeTree.Root.SetChild(sequence1);
-            sequence1.AddChildren(parallel, wait1);
-            parallel.AddChildren(log1, loop);
-            loop.SetChild(sequence2);
-            sequence2.AddChildren(log2, wait2);
+            RuntimeTree = m_Tree.Clone(gameObject.name, this);
         }
 
         public void DetectNoise(object source, float loudness)

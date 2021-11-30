@@ -2,6 +2,7 @@
 
 namespace Maple.Nodes
 {
+    [NodeCategory("Task")]
     public sealed class PlayAnimation : Task
     {
         [Tooltip("The name of the animation to play."), SerializeField]

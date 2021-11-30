@@ -2,6 +2,7 @@
 
 namespace Maple.Nodes
 {
+    [NodeCategory("Task")]
     public sealed class Breakpoint : Task
     {
         public static bool BreakpointsEnabled { get; set; } = true;

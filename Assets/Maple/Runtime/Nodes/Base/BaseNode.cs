@@ -54,6 +54,15 @@ namespace Maple.Nodes
             return node;
         }
 
+        public static BaseNode Create(BaseNode node)
+        {
+            var newNode = CreateInstance(node.GetType()) as BaseNode;
+            newNode.name = !string.IsNullOrWhiteSpace(node.name) ? node.name : newNode.GetType().Name;
+            newNode.Guid = System.Guid.NewGuid().ToString();
+
+            return newNode;
+        }
+
         public static BaseNode Create(Type type)
         {
             if (!type.IsSubclassOf(typeof(BaseNode)))
@@ -69,7 +78,7 @@ namespace Maple.Nodes
             return node;
         }
 
-        private void Initialise()
+        public void Initialise()
         {
             Guid = System.Guid.NewGuid().ToString();
 

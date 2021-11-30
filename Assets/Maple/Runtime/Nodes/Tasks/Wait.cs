@@ -2,6 +2,7 @@
 
 namespace Maple.Nodes
 {
+    [NodeCategory("Task")]
     public sealed class Wait : Task
     {
         [Tooltip("How long to wait before exiting the node."), SerializeField]

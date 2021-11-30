@@ -1,5 +1,6 @@
 ﻿namespace Maple.Nodes
 {
+    [NodeCategory("Composite")]
     public sealed class Selector : Composite
     {
         private BaseNode m_RunningNode;

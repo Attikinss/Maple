@@ -2,6 +2,7 @@
 
 namespace Maple.Nodes
 {
+    [NodeCategory("Task")]
     public sealed class MakeNoise : Task
     {
         [Tooltip("Defines how loud the sound is/the range of the sound in the environment."), SerializeField]

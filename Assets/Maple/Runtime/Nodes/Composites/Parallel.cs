@@ -3,6 +3,7 @@ using System.Linq;
 
 namespace Maple.Nodes
 {
+    [NodeCategory("Composite")]
     public sealed class Parallel : Composite
     {
         private Dictionary<string, int> m_Results = new Dictionary<string, int>();

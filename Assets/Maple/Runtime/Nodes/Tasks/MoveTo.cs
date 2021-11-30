@@ -2,6 +2,7 @@
 
 namespace Maple.Nodes
 {
+    [NodeCategory("Task")]
     public sealed class MoveTo : Task
     {
         [Tooltip("The goal position the agent will try navigating to."), SerializeField]

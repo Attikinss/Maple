@@ -3,6 +3,7 @@ using Maple.Blackboards;
 
 namespace Maple.Nodes
 {
+    [NodeCategory("Task")]
     public sealed class Log : Task
     {
         public static bool LoggingEnabled { get; set; } = true;

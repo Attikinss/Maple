@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
@@ -14,6 +15,10 @@ namespace Maple.Editor
         public static TreeGraphView Instance { get; private set; }
 
         public BehaviourTree CurrentTree { get => m_CurrentTree; }
+
+        public SearchWindowProvider SearchWindowProvider { get; private set; }
+
+        public EdgeConnectorListener EdgeConnectorListener { get; private set; }
 
         private BehaviourTree m_CurrentTree;
 
@@ -43,6 +48,23 @@ namespace Maple.Editor
 
             graphViewChanged += OnGraphViewChange;
 
+            // Initialise the search window provider
+            SearchWindowProvider = ScriptableObject.CreateInstance<SearchWindowProvider>();
+            SearchWindowProvider.Initialise();
+
+            // Initialse the edge connection listener
+            EdgeConnectorListener = new EdgeConnectorListener(SearchWindowProvider);
+
+            // Set up callback for node creation requests
+            nodeCreationRequest = ctx =>
+            {
+                // Ensure the port isn't selected
+                SearchWindowProvider.ConnectedPort = null;
+
+                // Open node search window
+                SearchWindow.Open(new SearchWindowContext(ctx.screenMousePosition), SearchWindowProvider);
+            };
+
             Instance = this;
 
             CreateElements();
@@ -66,10 +88,36 @@ namespace Maple.Editor
                 m_TreeNameField.SetValueWithoutNotify(tree.name);
             }
 
+            // Create graph nodes from tree
             m_CurrentTree.Nodes.ForEach(node =>
             {
                 var newNode = GraphNode.Construct(node);
                 AddElement(newNode);
+            });
+
+            // Connect graph nodes
+            nodes.ForEach(node =>
+            {
+                var graphNode = node as GraphNode;
+
+                var root = graphNode.RuntimeNode as Nodes.Root;
+                var composite = graphNode.RuntimeNode as Nodes.Composite;
+                var task = graphNode.RuntimeNode as Nodes.Task;
+
+                if (root != null)
+                {
+                    // Try to find the root's child
+                    var child = nodes.FirstOrDefault(n => (n as GraphNode).RuntimeNode == root.GetChild());
+                    if (child != null)
+                        AddElement(graphNode.OutputPort.ConnectTo((child as GraphNode).InputPort));
+                }
+                else if (composite != null)
+                {
+                    // Try to find the root's child
+                    var children = nodes.Where(n => composite.GetChildren().Any(child => child == (n as GraphNode).RuntimeNode)).ToList();
+                    foreach (var child in children)
+                        AddElement(graphNode.OutputPort.ConnectTo((child as GraphNode).InputPort));
+                }
             });
         }
 
@@ -129,15 +177,44 @@ namespace Maple.Editor
                 {
                     var node = element as GraphNode;
                     if (node != null)
-                    {
-                        // Delete node
-                    }
+                        m_CurrentTree?.RemoveNode(node.RuntimeNode);
 
                     var edge = element as Edge;
                     if (edge != null)
                     {
-                        // Delete edge
+                        GraphNode parent = edge.output.node as GraphNode;
+                        GraphNode child = edge.input.node as GraphNode;
+
+                        var root = parent.RuntimeNode as Nodes.Root;
+                        root?.ClearChild();
+
+                        var composite = parent.RuntimeNode as Nodes.Composite;
+                        composite?.RemoveChild(child.RuntimeNode);
                     }
+                }
+            }
+
+            if (change.edgesToCreate != null)
+            {
+                foreach (var edge in change.edgesToCreate)
+                {
+                    // Ensure null references are ignored
+                    if (edge.output == null || edge.input == null)
+                        continue;
+
+                    GraphNode parent = edge.output.node as GraphNode;
+                    GraphNode child = edge.input.node as GraphNode;
+
+                    // Convoluted way of checking if the nodes are already connected
+                    if (child.OutputPort != null && child.OutputPort.connections.FirstOrDefault(e => e.input.node == parent) != null ||
+                        parent.InputPort != null && parent.InputPort.connections.FirstOrDefault(e => e.output.node == child) != null)
+                        continue;
+
+                    var root = parent.RuntimeNode as Nodes.Root;
+                    root?.SetChild(child.RuntimeNode);
+
+                    var composite = parent.RuntimeNode as Nodes.Composite;
+                    composite?.AddChild(child.RuntimeNode);
                 }
             }
 
@@ -158,6 +235,18 @@ namespace Maple.Editor
             });
 
             return compatiblePorts;
+        }
+
+        public void AddNode(GraphNode node)
+        {
+            m_CurrentTree?.AddNode(node.RuntimeNode);
+            AddElement(node);
+        }
+
+        public void RemoveNode(GraphNode node)
+        {
+            m_CurrentTree?.RemoveNode(node.RuntimeNode);
+            RemoveElement(node);
         }
     }
 }

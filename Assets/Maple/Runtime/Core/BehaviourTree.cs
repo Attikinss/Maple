@@ -33,7 +33,7 @@ namespace Maple
         public static BehaviourTree CreateAsset()
         {
             // Create a default/empty tree instance
-            var tree = Create("New BehaviourTree");
+            var tree = Create("New BehaviourTree", null);
 
             Utilities.Utilities.CreateAssetFromItem(tree);
             UnityEditor.AssetDatabase.AddObjectToAsset(tree.Root, tree);
@@ -43,10 +43,11 @@ namespace Maple
         }
 #endif
 
-        public static BehaviourTree Create(string name)
+        public static BehaviourTree Create(string name, Agent owner)
         {
             var behaviourTree = ScriptableObject.CreateInstance<BehaviourTree>();
             behaviourTree.name = name;
+            behaviourTree.SetAgent(owner);
             behaviourTree.m_Root = BaseNode.Create<Root>(behaviourTree);
 
             return behaviourTree;
@@ -69,11 +70,12 @@ namespace Maple
                 Root.Tick();
         }
 
-        public BehaviourTree Clone(string name)
+        public BehaviourTree Clone(string name, Agent owner)
         {
             // Shallow copy the tree
             BehaviourTree clone = ScriptableObject.Instantiate(this);
             clone.name = $"[{name}] Behaviour Tree";
+            clone.SetAgent(owner);
 
             // Clear the nodes linked to the original tree and its nodes
             clone.Nodes.Clear();
@@ -95,7 +97,7 @@ namespace Maple
                     clone.m_Root = root;
 
                     // Find the cloned child of this node
-                    var childNode = clone.Nodes.Find(itr => itr.Guid == root.GetChild().Guid);
+                    var childNode = clone.Nodes.Find(itr => itr.Guid == m_Root.GetChild().Guid);
 
                     // Connect the cloned nodes
                     root.ClearChild();
@@ -107,7 +109,8 @@ namespace Maple
                 if (composite != null)
                 {
                     // Find the cloned children of this node
-                    var children = clone.Nodes.Where(itr => composite.GetChildren().Any(child => itr.Guid == child.Guid)).ToArray();
+                    var match = Nodes.Find(n => n.Guid == composite.Guid) as Composite;
+                    var children = clone.Nodes.Where(itr => match.GetChildren().Any(child => child.Guid == itr.Guid)).ToArray();
 
                     // Connect the cloned nodes
                     composite.GetChildren().Clear();
@@ -183,14 +186,16 @@ namespace Maple
             if (isAsset)
                 UnityEditor.Undo.RecordObject(this, "(Behaviour Tree): Node added");
 #endif
-            
+
+            node.Owner = this;
             m_Nodes.Add(node);
             
 #if UNITY_EDITOR
             if (isAsset)
             {
-                UnityEditor.AssetDatabase.SaveAssets();
                 UnityEditor.AssetDatabase.AddObjectToAsset(node, this);
+                UnityEditor.EditorUtility.SetDirty(this);
+                UnityEditor.AssetDatabase.SaveAssets();
             }
 #endif
         }
@@ -206,6 +211,7 @@ namespace Maple
                 UnityEditor.Undo.RecordObject(this, "(Behaviour Tree): Node removed");
 #endif
 
+            node.Owner = null;
             m_Nodes.Remove(node);
 
 #if UNITY_EDITOR
