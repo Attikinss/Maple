@@ -14,5 +14,7 @@ namespace Maple.Nodes
         
         /// <summary>The node completed its behaviour(s) successfully.</summary>
         Success = 4,
+
+        Inactive = 5
     }
 }

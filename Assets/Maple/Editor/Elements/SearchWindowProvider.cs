@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -206,7 +207,7 @@ namespace Maple.Editor
             Vector2 graphMousePosition = graphView.contentViewContainer.WorldToLocal(windowMousePosition);
 
             NodeEntry nodeEntry = (NodeEntry)entry.userData;
-            GraphNode newNode = GraphNode.Construct(BaseNode.Create(nodeEntry.Node.RuntimeNode));
+            GraphNode newNode = GraphNode.Construct(BaseNode.Create(nodeEntry.Node.RuntimeNode), AssetDatabase.GetAssetPath(Resources.Load<VisualTreeAsset>("UI Documents/GraphNode")));
             newNode.SetPosition(new Rect(graphMousePosition, Vector2.zero));
 
             if (ConnectedPort != null)

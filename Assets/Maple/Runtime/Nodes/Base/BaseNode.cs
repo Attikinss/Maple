@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Maple.Nodes
 {
-    public abstract class BaseNode : ScriptableObject, IComparer<BaseNode>, IComparable<BaseNode>
+    public abstract class BaseNode : ScriptableObject
     {
         /// <summary>The unique ID used to handle manipulation of nodes both in code and in the graph tool.</summary>
         public string Guid;
@@ -19,11 +19,6 @@ namespace Maple.Nodes
 
         /// <summary>The parent of which the node is linked/childed to in the node hierarchy.</summary>
         public BaseNode Parent;
-
-        /// <summary>The order in which the node is executed relative to its siblings. (i.e the other child nodes of the same parent)
-        /// <br>Execution priority begins at 1 and increases with each node.</br>
-        /// </summary>
-        public int ExecutionOrder;
 
         /// <summary>
         /// The saved position of the node when re-loaded and displayed in the graph tool.
@@ -162,9 +157,6 @@ namespace Maple.Nodes
             return State;
         }
 
-        public void SetExecutionOrder(int order) => ExecutionOrder = order;
         public void SetParent(BaseNode node) => Parent = node;
-        public int Compare(BaseNode a, BaseNode b) => a.ExecutionOrder - b.ExecutionOrder;
-        public int CompareTo(BaseNode other) => ExecutionOrder - other.ExecutionOrder;
     }
 }

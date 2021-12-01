@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,7 +32,7 @@ namespace Maple.Editor
         public static bool OpenWindow(int id, int line)
         {
             // Get a unity object from the ID of the opened asset
-            Object item = EditorUtility.InstanceIDToObject(id);
+            UnityEngine.Object item = EditorUtility.InstanceIDToObject(id);
 
             if (item is BehaviourTree)
             {
@@ -59,6 +60,13 @@ namespace Maple.Editor
             Instance = this;
             Instance.minSize = new Vector2(400, 360);
 
+            EditorApplication.playModeStateChanged += ModeChanged;
+
+            Rebuild();
+        }
+
+        private void ModeChanged(PlayModeStateChange state)
+        {
             Rebuild();
         }
 
@@ -67,6 +75,12 @@ namespace Maple.Editor
             rootVisualElement.Clear();
 
             Instance = null;
+        }
+
+        private void Update()
+        {
+            if (Application.isPlaying)
+                TreeGraphView.Instance?.UpdateNodeStates();
         }
 
         private void OnSelectionChange()
@@ -164,7 +178,7 @@ namespace Maple.Editor
                 // Find all scripts/components of type or subclass type of agent
                 // This assumes runtime trees will only be in the agent class or
                 // classes that inherit from agent.
-                List<Object> agents = FindObjectsOfType(typeof(Agent)).ToList();
+                List<UnityEngine.Object> agents = FindObjectsOfType(typeof(Agent)).ToList();
                 agents.ForEach(item =>
                 {
                     var treeProperties = item.GetType().GetProperties().ToList();

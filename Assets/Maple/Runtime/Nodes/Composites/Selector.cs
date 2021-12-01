@@ -6,7 +6,11 @@
         private BaseNode m_RunningNode;
         private int m_RunningNodeIndex = 0;
 
-        protected override void OnEnter() { }
+        protected override void OnEnter()
+        {
+            foreach (var child in m_Children)
+                child.State = NodeResult.Inactive;
+        }
 
         protected override void OnExit()
         {

@@ -17,8 +17,8 @@ namespace Maple.Nodes
 
             foreach (var child in m_Children)
             {
-                child.State = NodeResult.Running;
-                m_Results.Add(child.Guid, (int)NodeResult.Running);
+                child.State = NodeResult.Inactive;
+                m_Results.Add(child.Guid, (int)NodeResult.Inactive);
             }
         }
 

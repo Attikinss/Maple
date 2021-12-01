@@ -74,7 +74,7 @@ namespace Maple.Editor
             };
 
             Instance = this;
-            m_Root = GraphNode.Construct(Nodes.BaseNode.Create<Nodes.Root>(null));
+            m_Root = GraphNode.Construct(Nodes.BaseNode.Create<Nodes.Root>(null), AssetDatabase.GetAssetPath(Resources.Load<VisualTreeAsset>("UI Documents/GraphNode")));
             AddElement(m_Root);
 
             CreateElements();
@@ -101,7 +101,7 @@ namespace Maple.Editor
             // Create graph nodes from tree
             m_CurrentTree.Nodes.ForEach(node =>
             {
-                var newNode = GraphNode.Construct(node);
+                var newNode = GraphNode.Construct(node, AssetDatabase.GetAssetPath(Resources.Load<VisualTreeAsset>("UI Documents/GraphNode")));
                 AddElement(newNode);
             });
 
@@ -305,6 +305,16 @@ namespace Maple.Editor
                 }
             }
 
+            if (change.movedElements != null)
+            {
+                foreach (var element in change.movedElements)
+                {
+                    var node = (element as GraphNode)?.RuntimeNode;
+                    var parent = nodes.ToList().Find(n => n.viewDataKey == node.Parent.Guid) as GraphNode;
+                    parent?.SortChildren();
+                }
+            }
+
             return change;
         }
 
@@ -322,6 +332,15 @@ namespace Maple.Editor
             });
 
             return compatiblePorts;
+        }
+
+        public void UpdateNodeStates()
+        {
+            if (!m_CurrentTree)
+                return;
+
+            foreach (var node in nodes)
+                (node as GraphNode)?.UpdateState();
         }
 
         public void AddNode(GraphNode node)
