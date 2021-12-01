@@ -151,27 +151,24 @@ namespace Maple.Editor
             if (CurrentTree)
             {
                 // Clone the current tree if one is active
-                tree = CurrentTree.Clone(m_TreeNameField.value, null);
+                tree = CurrentTree.Clone(m_TreeNameField.value, null, true);
             }
             else
             {
                 // Create a tree from the nodes currently on the graph
                 tree = BehaviourTree.Create(m_TreeNameField.value, null, m_Root.RuntimeNode as Nodes.Root);
-            }
 
-            // Save the tree to disk
-            Utilities.Utilities.CreateAssetFromItem(tree);
-            AssetDatabase.AddObjectToAsset(tree.Root, tree);
-            AssetDatabase.SaveAssets();
+                // Save the tree to disk
+                Utilities.Utilities.CreateAssetFromItem(tree);
 
-            // Add all of the created/cloned nodes to the new tree's node list
-            nodes.ForEach(node =>
-            {
-                // Skip node addition as it automatically
-                // gets added to the tree on creation
-                if (node != m_Root)
+                // Add all of the created/cloned nodes to the new tree's node list
+                nodes.ForEach(node =>
+                {
+                    // Skip node addition as it automatically
+                    // gets added to the tree on creation
                     tree.AddNode((node as GraphNode).RuntimeNode);
-            });
+                });
+            }
 
             // Reload the newly created/cloned tree (not necessary
             // but it's probably easier to just not question it)

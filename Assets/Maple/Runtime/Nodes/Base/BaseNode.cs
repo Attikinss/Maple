@@ -12,10 +12,10 @@ namespace Maple.Nodes
         public string Guid;
         
         /// <summary>Defines the current activity state of a node hierarchy; if a node is active and running, then its parent will be too.</summary>
-        public bool Active;
+        public bool Active = false;
 
         /// <summary>Defines the current state of a signle node. (see NodeResult for further information)</summary>
-        public NodeResult State;
+        public NodeResult State = NodeResult.Inactive;
 
         /// <summary>The parent of which the node is linked/childed to in the node hierarchy.</summary>
         public BaseNode Parent;
@@ -41,7 +41,6 @@ namespace Maple.Nodes
         {
             var node = ScriptableObject.CreateInstance<T>();
 
-            owner?.AddNode(node);
             node.Owner = owner;
             node.name = string.IsNullOrWhiteSpace(title) ? typeof(T).Name : title;
             node.Initialise(); 

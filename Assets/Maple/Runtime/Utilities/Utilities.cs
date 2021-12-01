@@ -30,6 +30,7 @@ namespace Maple.Utilities
 
             // Create an on disk asset from the item at location
             UnityEditor.AssetDatabase.CreateAsset(item, UnityEditor.AssetDatabase.GenerateUniqueAssetPath($"{location}/{item.name}.asset"));
+            UnityEditor.AssetDatabase.SaveAssets();
 #endif
         }
 

@@ -1,5 +1,6 @@
 using Maple.Blackboards;
 using Maple.Nodes;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -50,10 +51,7 @@ namespace Maple
             behaviourTree.SetAgent(owner);
 
             if (root != null)
-            {
                 behaviourTree.m_Root = root;
-                behaviourTree.AddNode(behaviourTree.m_Root);
-            }
             else
                 behaviourTree.m_Root = BaseNode.Create<Root>(behaviourTree);
 
@@ -77,7 +75,7 @@ namespace Maple
                 Root.Tick();
         }
 
-        public BehaviourTree Clone(string name, Agent owner)
+        public BehaviourTree Clone(string name, Agent owner, bool toDisk = false)
         {
             // Shallow copy the tree
             BehaviourTree clone = ScriptableObject.Instantiate(this);
@@ -85,7 +83,13 @@ namespace Maple
             clone.SetAgent(owner);
 
             // Clear the nodes linked to the original tree and its nodes
-            clone.Nodes.Clear();
+            clone.ClearNodes();
+
+            if (toDisk)
+            {
+                // Save the tree to disk
+                Utilities.Utilities.CreateAssetFromItem(clone);
+            }
 
             // Add shallow copies of original nodes
             Nodes.ForEach(node =>
@@ -194,6 +198,14 @@ namespace Maple
             Agent?.DetachTree();
             Agent = agent;
             Agent.AttachTree(this);
+        }
+
+        public void ClearNodes()
+        {
+            for (int i = m_Nodes.Count - 1; i >= 0; i--)
+                RemoveNode(m_Nodes[i]);
+
+            m_Nodes.Clear();
         }
 
         public void AddNode(BaseNode node)
