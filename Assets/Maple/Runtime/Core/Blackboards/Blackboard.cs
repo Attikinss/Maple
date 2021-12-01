@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
@@ -41,9 +42,13 @@ namespace Maple.Blackboards
                 // If an entry with the same name and value
                 // type already exists notify user and return
                 Debug.LogError($"BlackboardEntry ({name}): Cannot add entry - entry already exists!");
+                return;
             }
 
-            Entries.Add(BlackboardEntry.Create(name, entryValue, this));
+            entry = BlackboardEntry.Create(name, entryValue, this);
+            Entries.Add(entry);
+
+            AddToAsset(entry);
         }
 
         public void AddEntry(BlackboardEntry entry)
@@ -55,6 +60,7 @@ namespace Maple.Blackboards
             }
 
             Entries.Add(entry);
+            AddToAsset(entry);
         }
 
         public void RemoveEntry<T>(string name) => RemoveEntry(name, typeof(T));
@@ -71,6 +77,7 @@ namespace Maple.Blackboards
 
             entry.ClearListeners();
             Entries.Remove(entry);
+            RemoveFromAsset(entry);
         }
 
         public void UpdateEntryValue<T>(string name, T newValue)
@@ -99,6 +106,31 @@ namespace Maple.Blackboards
             }
 
             return null;
+        }
+
+
+        private void AddToAsset(BlackboardEntry entry)
+        {
+#if UNITY_EDITOR
+            if (UnityEditor.AssetDatabase.GetAssetPath(this).Length > 0)
+            {
+                UnityEditor.AssetDatabase.AddObjectToAsset(entry, this);
+                UnityEditor.EditorUtility.SetDirty(this);
+                UnityEditor.AssetDatabase.SaveAssets();
+            }
+#endif
+        }
+
+
+        private void RemoveFromAsset(BlackboardEntry entry)
+        {
+#if UNITY_EDITOR
+            if (UnityEditor.AssetDatabase.GetAssetPath(this).Length > 0)
+            {
+                UnityEditor.AssetDatabase.RemoveObjectFromAsset(entry);
+                UnityEditor.AssetDatabase.SaveAssets();
+            }
+#endif
         }
     }
 }

@@ -54,6 +54,7 @@ namespace Maple.Editor
             background.StretchToParentSize();
             Insert(0, background);
 
+            // Add function to handle when changes are made on the graph
             graphViewChanged += OnGraphViewChange;
 
             // Initialise the search window provider
@@ -74,7 +75,10 @@ namespace Maple.Editor
             };
 
             Instance = this;
-            m_Root = GraphNode.Construct(Nodes.BaseNode.Create<Nodes.Root>(null), AssetDatabase.GetAssetPath(Resources.Load<VisualTreeAsset>("UI Documents/GraphNode")));
+
+            // Create and add a default root node
+            m_Root = GraphNode.Construct(Nodes.BaseNode.Create<Nodes.Root>(null),
+                AssetDatabase.GetAssetPath(Resources.Load<VisualTreeAsset>("UI Documents/GraphNode")));
             AddElement(m_Root);
 
             CreateElements();
@@ -87,16 +91,14 @@ namespace Maple.Editor
 
         public void LoadTree(BehaviourTree tree)
         {
+            // Don't do anything
             if (tree == null || m_CurrentTree == tree)
                 return;
 
-            if (m_CurrentTree != tree)
-            {
-                ClearGraph();
-            
-                m_CurrentTree = tree;
-                m_TreeNameField.SetValueWithoutNotify(tree.name);
-            }
+            // Prepare graph for new tree
+            ClearGraph();
+            m_CurrentTree = tree;
+            m_TreeNameField.SetValueWithoutNotify(tree.name);
 
             // Create graph nodes from tree
             m_CurrentTree.Nodes.ForEach(node =>
@@ -108,8 +110,10 @@ namespace Maple.Editor
             // Connect graph nodes
             nodes.ForEach(node =>
             {
+                // Cast the current node
                 var graphNode = node as GraphNode;
 
+                // Try to cast its runtime node
                 var root = graphNode.RuntimeNode as Nodes.Root;
                 var composite = graphNode.RuntimeNode as Nodes.Composite;
                 var task = graphNode.RuntimeNode as Nodes.Task;
@@ -118,14 +122,14 @@ namespace Maple.Editor
                 {
                     m_Root = graphNode;
 
-                    // Try to find the root's child
+                    // Try to find the root's child, connect it, and add it to the graph
                     var child = nodes.FirstOrDefault(n => (n as GraphNode).RuntimeNode == root.GetChild());
                     if (child != null)
                         AddElement(graphNode.OutputPort.ConnectTo((child as GraphNode).InputPort));
                 }
                 else if (composite != null)
                 {
-                    // Try to find the root's child
+                    // Try to find the composite's children, connect them, and add them to the graph
                     var children = nodes.Where(n => composite.GetChildren().Any(child => child == (n as GraphNode).RuntimeNode)).ToList();
                     foreach (var child in children)
                         AddElement(graphNode.OutputPort.ConnectTo((child as GraphNode).InputPort));
@@ -135,6 +139,8 @@ namespace Maple.Editor
 
         public void NewTree()
         {
+            // Create a blank behaviour tree asset
+            // on disk and immediately load it
             LoadTree(BehaviourTree.CreateAsset());
         }
 
@@ -143,37 +149,59 @@ namespace Maple.Editor
             BehaviourTree tree = null;
 
             if (CurrentTree)
+            {
+                // Clone the current tree if one is active
                 tree = CurrentTree.Clone(m_TreeNameField.value, null);
+            }
             else
+            {
+                // Create a tree from the nodes currently on the graph
                 tree = BehaviourTree.Create(m_TreeNameField.value, null, m_Root.RuntimeNode as Nodes.Root);
+            }
 
+            // Save the tree to disk
             Utilities.Utilities.CreateAssetFromItem(tree);
             AssetDatabase.AddObjectToAsset(tree.Root, tree);
             AssetDatabase.SaveAssets();
 
+            // Add all of the created/cloned nodes to the new tree's node list
             nodes.ForEach(node =>
             {
+                // Skip node addition as it automatically
+                // gets added to the tree on creation
                 if (node != m_Root)
                     tree.AddNode((node as GraphNode).RuntimeNode);
             });
 
+            // Reload the newly created/cloned tree (not necessary
+            // but it's probably easier to just not question it)
             LoadTree(tree);
         }
 
         public void ClearGraph(bool removeFromTree = false)
         {
+            
             if (removeFromTree)
+            {
+                // Delete nodes from the selected tree
                 DeleteElements(graphElements);
+            }
             else
             {
+                // Prevent nodes from being removed from current tree
                 graphViewChanged -= OnGraphViewChange;
                 
+                // Make root node deletable so that it can be replaced with another root
                 if (m_Root != null)
                     m_Root.capabilities = m_Root.capabilities | Capabilities.Deletable;
                 
+                // Delete all nodes (only from the graph)
                 DeleteElements(graphElements);
+
+                // Null out root node for safety
                 m_Root = null;
 
+                // Reenable custom graph change detections
                 graphViewChanged += OnGraphViewChange;
             }
         }
@@ -202,10 +230,12 @@ namespace Maple.Editor
         {
             if (evt.button == 0)
             {
+                // Convert mouse position
                 Vector3 screenMousePosition = evt.localMousePosition;
                 Vector2 worldMousePosition = screenMousePosition - contentViewContainer.transform.position;
                 worldMousePosition *= 1 / contentViewContainer.transform.scale.x;
 
+                // Check if mouse is over node and update node inspector
                 bool mouseOverNode = nodes.Any(node => (node as GraphNode).IsMouseOver(worldMousePosition));
                 if (!mouseOverNode)
                     TreeEditorWindow.Instance.Inspector.UpdateSelection(null);
@@ -269,9 +299,11 @@ namespace Maple.Editor
                     var edge = element as Edge;
                     if (edge != null)
                     {
+                        // Try to cast the edge's nodes
                         GraphNode parent = edge.output.node as GraphNode;
                         GraphNode child = edge.input.node as GraphNode;
 
+                        // Remove child from the node based on its type
                         var root = parent.RuntimeNode as Nodes.Root;
                         root?.ClearChild();
 
@@ -289,6 +321,7 @@ namespace Maple.Editor
                     if (edge.output == null || edge.input == null)
                         continue;
 
+                    // Try to cast the edge's nodes
                     GraphNode parent = edge.output.node as GraphNode;
                     GraphNode child = edge.input.node as GraphNode;
 
@@ -297,6 +330,7 @@ namespace Maple.Editor
                         parent.InputPort != null && parent.InputPort.connections.FirstOrDefault(e => e.output.node == child) != null)
                         continue;
 
+                    // Add child to the node based on its type
                     var root = parent.RuntimeNode as Nodes.Root;
                     root?.SetChild(child.RuntimeNode);
 
@@ -309,8 +343,10 @@ namespace Maple.Editor
             {
                 foreach (var element in change.movedElements)
                 {
-                    var node = (element as GraphNode)?.RuntimeNode;
-                    var parent = nodes.ToList().Find(n => n.viewDataKey == node.Parent.Guid) as GraphNode;
+                    var movedNode = (element as GraphNode)?.RuntimeNode;
+                    
+                    // Find the parent of this moved node and sort its children (i.e moved node and its sublings)
+                    var parent = nodes.ToList().Find(n => movedNode.Parent != null && n.viewDataKey == movedNode.Parent.Guid) as GraphNode;
                     parent?.SortChildren();
                 }
             }
@@ -339,6 +375,7 @@ namespace Maple.Editor
             if (!m_CurrentTree)
                 return;
 
+            // Update state of all nodes on the graph so long as a tree is selected
             foreach (var node in nodes)
                 (node as GraphNode)?.UpdateState();
         }

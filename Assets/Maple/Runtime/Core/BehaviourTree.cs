@@ -88,7 +88,15 @@ namespace Maple
             clone.Nodes.Clear();
 
             // Add shallow copies of original nodes
-            Nodes.ForEach(node => clone.Nodes.Add(ScriptableObject.Instantiate(node)));
+            Nodes.ForEach(node =>
+            {
+                var newNode = ScriptableObject.Instantiate(node);
+
+                // Ensures (Clone) isn't in the name
+                newNode.name = node.name;
+                
+                clone.AddNode(newNode);
+            });
 
             // Deep copy all nodes
             clone.Nodes.ForEach(node =>
@@ -146,7 +154,8 @@ namespace Maple
 
         public void SetBlackboard(Blackboard blackboard)
         {
-            m_Blackboard = blackboard;
+            if (m_Blackboard != blackboard)
+                m_Blackboard = blackboard;
         }
 
         public void SetAgent(Agent agent)

@@ -9,7 +9,10 @@ namespace Maple.Blackboards
     public sealed class BlackboardEntry : ScriptableObject
     {
         public string Name { get; private set; }
-        public object Value { get; private set; }
+        public object Value { get => m_Value; }
+
+        private object m_Value;
+
         public BlackboardEntryType ValueType = BlackboardEntryType.None;
         public Blackboard Owner;
 
@@ -38,7 +41,7 @@ namespace Maple.Blackboards
             entry.Owner = owner;
 
             // Ensure a value is assigned, even if it is a default value
-            entry.Value = value == null ? default(T) : value;
+            entry.m_Value = value == null ? default(T) : value;
 
             return entry;
         }
@@ -76,7 +79,7 @@ namespace Maple.Blackboards
 
             // Change value and update listeners if need be
             if (setWithoutNotify)
-                Value = value;
+                m_Value = value;
             else
                 OnValueChanged(value);
         }
@@ -107,7 +110,7 @@ namespace Maple.Blackboards
 
         private void OnValueChanged(object value)
         {
-            Value = value;
+            m_Value = value;
 
             foreach (var listener in m_Listeners)
                 listener.UpdateEntryInfo(this);
