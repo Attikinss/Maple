@@ -77,12 +77,25 @@ namespace Maple.Editor
             EditorUtility.SetDirty(m_RuntimeNode);
         }
 
+        public override void OnSelected()
+        {
+            base.OnSelected();
+            TreeEditorWindow.Instance?.OnSelection(this);
+        }
+
         public override void SetPosition(Rect newPos)
         {
             base.SetPosition(newPos);
 
             m_RuntimeNode.Position.x = newPos.xMin;
             m_RuntimeNode.Position.y = newPos.yMin;
+        }
+
+        public bool IsMouseOver(Vector2 mousePos)
+        {
+            var position = GetPosition();
+            return (mousePos.x > position.xMin && mousePos.y > position.yMin &&
+                mousePos.x < position.xMax && mousePos.y < position.yMax);
         }
 
         public void SetRuntimeNode(BaseNode node)

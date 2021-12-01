@@ -24,8 +24,14 @@ namespace Maple.Editor
 
         private TextField m_TreeNameField;
 
+        private GraphNode m_Root;
+
         public void Construct()
         {
+            // Set callback for key down events
+            RegisterCallback<KeyDownEvent>(OnKeyDown);
+            RegisterCallback<MouseDownEvent>(OnMouseDown);
+
             // Stretch to parent window's size
             this.StretchToParentSize();
 
@@ -66,6 +72,8 @@ namespace Maple.Editor
             };
 
             Instance = this;
+            m_Root = GraphNode.Construct(Nodes.BaseNode.Create<Nodes.Root>(null));
+            AddElement(m_Root);
 
             CreateElements();
         }
@@ -77,7 +85,7 @@ namespace Maple.Editor
 
         public void LoadTree(BehaviourTree tree)
         {
-            if (tree == null)
+            if (tree == null || m_CurrentTree == tree)
                 return;
 
             if (m_CurrentTree != tree)
@@ -128,9 +136,57 @@ namespace Maple.Editor
             else
             {
                 graphViewChanged -= OnGraphViewChange;
+                
+                if (m_Root != null)
+                    m_Root.capabilities = m_Root.capabilities | Capabilities.Deletable;
+                
                 DeleteElements(graphElements);
+                m_Root = null;
+
                 graphViewChanged += OnGraphViewChange;
             }
+        }
+
+        public void OnKeyDown(KeyDownEvent evt)
+        {
+            // Select all with 'Ctrl + A'
+            if (evt.ctrlKey && evt.keyCode == KeyCode.A)
+                SelectAll();
+            // Clear selection with 'Esc'
+            else if (!evt.shiftKey && !evt.altKey && !evt.ctrlKey && !evt.commandKey && evt.keyCode == KeyCode.Escape)
+                ClearSelection();
+            // Focus on elements in the graoh using 'F'
+            else if (evt.keyCode == KeyCode.F && !evt.shiftKey && !evt.altKey && !evt.ctrlKey && !evt.commandKey)
+            {
+                // Focus on selected elements
+                if (selection.Count > 0)
+                    FrameSelection();
+                // Focus on all elements
+                else
+                    FrameAll();
+            }
+        }
+
+        public void OnMouseDown(MouseDownEvent evt)
+        {
+            if (evt.button == 0)
+            {
+                Vector3 screenMousePosition = evt.localMousePosition;
+                Vector2 worldMousePosition = screenMousePosition - contentViewContainer.transform.position;
+                worldMousePosition *= 1 / contentViewContainer.transform.scale.x;
+
+                bool mouseOverNode = nodes.Any(node => (node as GraphNode).IsMouseOver(worldMousePosition));
+                if (!mouseOverNode)
+                    TreeEditorWindow.Instance.Inspector.UpdateSelection(null);
+            }
+        }
+
+        /// <summary>Selects all elements in the graph.</summary>
+        private void SelectAll()
+        {
+            // Add all elements in the graph to the selection
+            foreach (var element in graphElements.ToList())
+                AddToSelection(element);
         }
 
         private void CreateTreeNameField()

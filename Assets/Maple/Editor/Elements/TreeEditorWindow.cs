@@ -12,14 +12,21 @@ namespace Maple.Editor
     {
         public static TreeEditorWindow Instance { get; private set; }
 
+        public InspectorView Inspector { get => m_InspectorView; }
+
         private ToolbarMenu m_FileMenu;
         private ToolbarMenu m_CurrentTreeField;
-        private List<BehaviourTree> m_AvailableTrees;
+        private InspectorView m_InspectorView;
 
         [MenuItem("Tools/Maple AI/Tree Editor")]
         public static void OpenWindow()
         {
             Instance = GetWindow<TreeEditorWindow>("Maple AI Editor");
+        }
+
+        public void OnSelection(GraphNode node)
+        {
+            m_InspectorView?.UpdateSelection(node);
         }
 
         private void OnEnable()
@@ -72,36 +79,8 @@ namespace Maple.Editor
 
         private void CreatePropertiesPanel()
         {
-            // Query menu toggle buttons
-            ToolbarToggle inspector = rootVisualElement.Q<ToolbarToggle>("InspectorToggle");
-            ToolbarToggle blackboard = rootVisualElement.Q<ToolbarToggle>("BlackboardToggle");
-
-            if (blackboard != null)
-            {
-                // Ensure when blackboard toggle is clicked all other toggles are disabled
-                blackboard.RegisterValueChangedCallback(evt =>
-                {
-                    if (evt.newValue)
-                        inspector.value = false;
-                    else if (!inspector.value)
-                        blackboard.SetValueWithoutNotify(true);
-                });
-            }
-
-            if (inspector != null)
-            {
-                // Ensure when inspector toggle is clicked all other toggles are disabled
-                inspector.RegisterValueChangedCallback(evt =>
-                {
-                    if (evt.newValue)
-                        blackboard.value = false;
-                    else if (!blackboard.value)
-                        inspector.SetValueWithoutNotify(true);
-                });
-
-                // Make inspector active by default
-                inspector.value = true;
-            }
+            m_InspectorView = rootVisualElement.Q<InspectorView>();
+            m_InspectorView.Initialise();
         }
 
         private void CreateGraphView()
