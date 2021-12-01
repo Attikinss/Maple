@@ -18,7 +18,7 @@ namespace Maple.Nodes
         protected override NodeResult OnTick()
         {
             if (LoggingEnabled)
-                Debug.Log($"({Owner.Agent.gameObject.name}): {m_Message.GetValue<string>()}");
+                Debug.Log($"({Owner.Agent?.gameObject.name}): {m_Message.GetValue<string>()}");
 
             return NodeResult.Success;
         }

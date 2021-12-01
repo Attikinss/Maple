@@ -147,7 +147,7 @@ namespace Maple
                 return;
             }
 
-            agent.AttachTree(this);
+            agent?.AttachTree(this);
             Agent = agent;
         }
 

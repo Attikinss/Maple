@@ -82,7 +82,7 @@ namespace Maple.Nodes
         {
             Guid = System.Guid.NewGuid().ToString();
 
-            if (Owner.Blackboard == null)
+            if (Owner?.Blackboard == null)
                 return;
 
             var bbkFields = GetType().GetFields().Where(field => field.FieldType.IsSubclassOf(typeof(BlackboardKey))).ToList();
