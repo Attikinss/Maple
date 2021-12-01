@@ -10,6 +10,7 @@ namespace Maple.Editor
         public new class UxmlFactory : UxmlFactory<InspectorView, UxmlTraits> { }
 
         private NodeInspectorView m_NodeInspector;
+        private BlackboardInspectorView m_BlackboardInspector;
         private UnityEditor.Editor m_CurrentInspector;
 
         private ToolbarToggle m_NodeInspectorToggle;
@@ -27,6 +28,12 @@ namespace Maple.Editor
             // Create new inspector with selection (null)
             m_NodeInspector = UnityEditor.Editor.CreateEditor(Nodes.BaseNode.Create<Nodes.Root>(null), typeof(NodeInspectorView)) as NodeInspectorView;
             m_NodeInspector.UpdateTarget(null);
+
+            // Destroy blackboard inspector
+            Object.DestroyImmediate(m_BlackboardInspector);
+
+            // Create new inspector with selection (null)
+            m_BlackboardInspector = UnityEditor.Editor.CreateEditor(Blackboards.Blackboard.Create(""), typeof(BlackboardInspectorView)) as BlackboardInspectorView;
 
             // Query menu toggle buttons
             m_NodeInspectorToggle = TreeEditorWindow.Instance?.rootVisualElement.Q<ToolbarToggle>("InspectorToggle");
@@ -89,6 +96,11 @@ namespace Maple.Editor
                 m_CurrentInspector = m_NodeInspector;
                 UpdateInspector(() => m_CurrentInspector?.OnInspectorGUI());
             }
+            else if (typeof(T) == typeof(BlackboardInspectorView))
+            {
+                m_CurrentInspector = m_BlackboardInspector;
+                UpdateInspector(() => m_CurrentInspector?.OnInspectorGUI());
+            }
             else
             {
                 m_CurrentInspector = null;
@@ -106,7 +118,6 @@ namespace Maple.Editor
             m_InspectorContainer.style.marginTop = 5;
             m_InspectorContainer.style.marginLeft = 5;
             m_InspectorContainer.style.marginRight = 5;
-            m_InspectorContainer.style.minWidth = 250;
             Add(m_InspectorContainer);
         }
     }
