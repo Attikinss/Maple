@@ -43,12 +43,19 @@ namespace Maple
         }
 #endif
 
-        public static BehaviourTree Create(string name, Agent owner)
+        public static BehaviourTree Create(string name, Agent owner, Root root = null)
         {
             var behaviourTree = ScriptableObject.CreateInstance<BehaviourTree>();
             behaviourTree.name = name;
             behaviourTree.SetAgent(owner);
-            behaviourTree.m_Root = BaseNode.Create<Root>(behaviourTree);
+
+            if (root != null)
+            {
+                behaviourTree.m_Root = root;
+                behaviourTree.AddNode(behaviourTree.m_Root);
+            }
+            else
+                behaviourTree.m_Root = BaseNode.Create<Root>(behaviourTree);
 
             return behaviourTree;
         }
@@ -74,7 +81,7 @@ namespace Maple
         {
             // Shallow copy the tree
             BehaviourTree clone = ScriptableObject.Instantiate(this);
-            clone.name = $"[{name}] Behaviour Tree";
+            clone.name = name;
             clone.SetAgent(owner);
 
             // Clear the nodes linked to the original tree and its nodes
@@ -96,12 +103,16 @@ namespace Maple
                     // Set the root node of the cloned tree
                     clone.m_Root = root;
 
-                    // Find the cloned child of this node
-                    var childNode = clone.Nodes.Find(itr => itr.Guid == m_Root.GetChild().Guid);
-
-                    // Connect the cloned nodes
                     root.ClearChild();
-                    root.SetChild(childNode);
+
+                    // Find the cloned child of this node
+                    if (m_Root.GetChild())
+                    {
+                        var childNode = clone.Nodes.Find(itr => itr.Guid == m_Root.GetChild().Guid);
+
+                        // Connect the cloned nodes
+                        root.SetChild(childNode);
+                    }
                 }
 
                 // Attempt node cast as a composite
@@ -178,7 +189,7 @@ namespace Maple
 
         public void AddNode(BaseNode node)
         {
-            if (m_Nodes.Contains(node))
+            if (node == null || m_Nodes.Contains(node))
                 return;
 
 #if UNITY_EDITOR

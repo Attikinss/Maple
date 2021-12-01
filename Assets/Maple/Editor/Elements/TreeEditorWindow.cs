@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
+using UnityEditor.Callbacks;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -17,11 +18,35 @@ namespace Maple.Editor
         private ToolbarMenu m_FileMenu;
         private ToolbarMenu m_CurrentTreeField;
         private InspectorView m_InspectorView;
+        private BehaviourTree m_OnAssetOpenTree;
 
         [MenuItem("Tools/Maple AI/Tree Editor")]
         public static void OpenWindow()
         {
             Instance = GetWindow<TreeEditorWindow>("Maple AI Editor");
+        }
+
+        /// <summary>Opens the editor window via asset open.</summary>
+        [OnOpenAsset()]
+        public static bool OpenWindow(int id, int line)
+        {
+            // Get a unity object from the ID of the opened asset
+            Object item = EditorUtility.InstanceIDToObject(id);
+
+            if (item is BehaviourTree)
+            {
+                // Open a new tree editor window
+                Instance = GetWindow<TreeEditorWindow>("Maple AI Editor");
+
+                // Set the current tree object field value as the opened asset
+                Instance.m_OnAssetOpenTree = item as BehaviourTree;
+
+                Instance.Rebuild();
+
+                return true;
+            }
+
+            return false;
         }
 
         public void OnSelection(GraphNode node)
@@ -32,13 +57,7 @@ namespace Maple.Editor
         private void OnEnable()
         {
             Instance = this;
-
-            // Import UXML
-            var visualTree = Resources.Load<VisualTreeAsset>("UI Documents/AITreeEditor");
-            visualTree.CloneTree(rootVisualElement);
-
-            // Import style sheet
-            rootVisualElement.styleSheets.Add(Resources.Load<StyleSheet>("Styles/AITreeEditor"));
+            Instance.minSize = new Vector2(400, 360);
 
             Rebuild();
         }
@@ -50,9 +69,23 @@ namespace Maple.Editor
             Instance = null;
         }
 
+        private void OnSelectionChange()
+        {
+            var graphRoot = TreeGraphView.Instance.Root;
+            if (graphRoot != null && graphRoot.RuntimeNode == null)
+                Rebuild();
+        }
+
         private void Rebuild()
         {
-            Instance.minSize = new Vector2(400, 360);
+            rootVisualElement.Clear();
+
+            // Import UXML
+            var visualTree = Resources.Load<VisualTreeAsset>("UI Documents/AITreeEditor");
+            visualTree.CloneTree(rootVisualElement);
+
+            // Import style sheet
+            rootVisualElement.styleSheets.Add(Resources.Load<StyleSheet>("Styles/AITreeEditor"));
 
             CreateGraphView();
             CreateToolbar();
@@ -64,10 +97,10 @@ namespace Maple.Editor
             m_FileMenu = rootVisualElement.Q<ToolbarMenu>("FileMenu");
 
             // Clear graph
-            m_FileMenu.menu.AppendAction("New", ctx => {  });
+            m_FileMenu.menu.AppendAction("New", ctx => TreeGraphView.Instance.NewTree());
             
             // Save the current tree as a new behaviour tree asset
-            m_FileMenu.menu.AppendAction("Save As New", ctx => {  });
+            m_FileMenu.menu.AppendAction("Save As New", ctx => TreeGraphView.Instance.SaveGraphAsNew());
 
             m_CurrentTreeField = rootVisualElement.Q<ToolbarMenu>("TreeSelectionField");
             m_CurrentTreeField.RegisterCallback<ClickEvent>(evt =>
@@ -87,7 +120,11 @@ namespace Maple.Editor
         {
             var graphView = rootVisualElement.Q<TreeGraphView>();
             if (graphView != null)
+            {
                 graphView.Construct();
+                graphView.LoadTree(m_OnAssetOpenTree);
+                m_OnAssetOpenTree = null;
+            }
         }
 
         private void UpdateAvailableTrees()

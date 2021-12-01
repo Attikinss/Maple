@@ -16,6 +16,8 @@ namespace Maple.Editor
 
         public BehaviourTree CurrentTree { get => m_CurrentTree; }
 
+        public GraphNode Root { get => m_Root; }
+
         public SearchWindowProvider SearchWindowProvider { get; private set; }
 
         public EdgeConnectorListener EdgeConnectorListener { get; private set; }
@@ -114,6 +116,8 @@ namespace Maple.Editor
 
                 if (root != null)
                 {
+                    m_Root = graphNode;
+
                     // Try to find the root's child
                     var child = nodes.FirstOrDefault(n => (n as GraphNode).RuntimeNode == root.GetChild());
                     if (child != null)
@@ -127,6 +131,33 @@ namespace Maple.Editor
                         AddElement(graphNode.OutputPort.ConnectTo((child as GraphNode).InputPort));
                 }
             });
+        }
+
+        public void NewTree()
+        {
+            LoadTree(BehaviourTree.CreateAsset());
+        }
+
+        public void SaveGraphAsNew()
+        {
+            BehaviourTree tree = null;
+
+            if (CurrentTree)
+                tree = CurrentTree.Clone(m_TreeNameField.value, null);
+            else
+                tree = BehaviourTree.Create(m_TreeNameField.value, null, m_Root.RuntimeNode as Nodes.Root);
+
+            Utilities.Utilities.CreateAssetFromItem(tree);
+            AssetDatabase.AddObjectToAsset(tree.Root, tree);
+            AssetDatabase.SaveAssets();
+
+            nodes.ForEach(node =>
+            {
+                if (node != m_Root)
+                    tree.AddNode((node as GraphNode).RuntimeNode);
+            });
+
+            LoadTree(tree);
         }
 
         public void ClearGraph(bool removeFromTree = false)
