@@ -159,7 +159,7 @@ namespace Maple.Editor
                 tree = BehaviourTree.Create(m_TreeNameField.value, null, m_Root.RuntimeNode as Nodes.Root);
 
                 // Save the tree to disk
-                Utilities.Utilities.CreateAssetFromItem(tree);
+                Maple.Utilities.Utilities.CreateAssetFromItem(tree);
 
                 // Add all of the created/cloned nodes to the new tree's node list
                 nodes.ForEach(node =>

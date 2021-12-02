@@ -65,6 +65,8 @@ namespace Maple.Blackboards
 
         public void RemoveEntry<T>(string name) => RemoveEntry(name, typeof(T));
 
+        public void RemoveEntry(string name, BlackboardEntryType type) => RemoveEntry(name, BlackboardEntry.TypeFromEnum(type));
+
         public void RemoveEntry(string name, System.Type valueType)
         {
             var entry = FindEntryByName(name, valueType);
@@ -78,6 +80,7 @@ namespace Maple.Blackboards
             entry.ClearListeners();
             Entries.Remove(entry);
             RemoveFromAsset(entry);
+            DestroyImmediate(entry);
         }
 
         public void UpdateEntryValue<T>(string name, T newValue)
@@ -101,7 +104,7 @@ namespace Maple.Blackboards
             foreach (var entry in Entries)
             {
                 // Return the entry if the name and value type matches
-                if (entry.Name == name && entry.Value.GetType() == valueType)
+                if (entry.Name == name && entry.ValueType == BlackboardEntry.EnumFromType(valueType))
                     return entry;
             }
 

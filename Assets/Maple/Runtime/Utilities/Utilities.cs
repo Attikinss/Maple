@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Maple.Utilities
 {
-    public static class Utilities
+    public partial class Utilities
     {
         /// <summary>Creates a item inheriting from ScriptableObject in the selected folder or root Assets folder if one isn't selected.</summary>
         /// <typeparam name="T">The type of the object being created in the project directory.</typeparam>

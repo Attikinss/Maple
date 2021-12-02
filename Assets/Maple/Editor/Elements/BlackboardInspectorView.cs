@@ -78,11 +78,12 @@ namespace Maple.Editor
                         }
                     }
                 }
-
-                EditorGUILayout.Space();
             }
             
             GUILayout.EndVertical();
+
+            if (Event.current.isMouse)
+                m_AddEntry = false;
 
             TreeGraphView.Instance.CurrentTree.SetBlackboard(m_Target);
         }
@@ -130,7 +131,40 @@ namespace Maple.Editor
 
         private void DrawEntry(BlackboardEntry entry)
         {
+            bool deleteEntry = false;
+            FieldInfo[] fields = entry.GetType().GetFields();
+            SerializedObject so = new SerializedObject(entry);
+
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+
+            // Draw each entry element as a dropdown headergroup
+            GUIStyle headerStyle = "DropDownButton";
+            entry.Expand = EditorGUILayout.BeginFoldoutHeaderGroup(entry.Expand, entry.Name, headerStyle, null, headerStyle);
             
+            if (entry.Expand)
+            {
+                Utilities.DrawLineSeparator();
+                entry.SetName(EditorGUILayout.TextField("Name", entry.Name));
+
+                foreach (var field in fields)
+                {
+                    SerializedProperty sp = so.FindProperty(field.Name);
+
+                    if (sp != null)
+                        EditorGUILayout.PropertyField(sp, new GUIContent(field.Name.TrimStart('m', '_')), false);
+                }
+
+                deleteEntry = GUILayout.Button("Delete");
+            }
+
+            EditorGUILayout.EndFoldoutHeaderGroup();
+            EditorGUILayout.EndVertical();
+
+            so.ApplyModifiedProperties();
+            EditorUtility.SetDirty(entry);
+
+            if (deleteEntry)
+                m_Target.RemoveEntry(entry.Name, entry.ValueType);
         }
     }
 }

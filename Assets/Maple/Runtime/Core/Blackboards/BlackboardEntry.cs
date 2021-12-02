@@ -10,6 +10,7 @@ namespace Maple.Blackboards
     {
         public string Name { get; private set; }
         public object Value { get => m_Value; }
+        public bool Expand { get; set; }
 
         private object m_Value;
 
@@ -48,13 +49,34 @@ namespace Maple.Blackboards
 
         public void SetName(string name)
         {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                Debug.LogError($"(Blackboard Entry - {Name}): Cannot change name - empty values not permitted!");
+            if (Name == name || string.IsNullOrWhiteSpace(name))
                 return;
+
+            // Gross way of updating name in project panel
+#if UNITY_EDITOR
+            bool matchFound = false;
+            var assets = UnityEditor.AssetDatabase.LoadAllAssetsAtPath(UnityEditor.AssetDatabase.GetAssetPath(this));
+            foreach (var a in assets)
+            {
+                if (a == this)
+                {
+                    UnityEditor.AssetDatabase.RemoveObjectFromAsset(this);
+                    matchFound = true;
+                    break;
+                }
             }
+#endif
 
             Name = name;
+            this.name = name;
+
+#if UNITY_EDITOR
+            if (matchFound)
+            {
+                UnityEditor.AssetDatabase.AddObjectToAsset(this, Owner);
+                UnityEditor.AssetDatabase.SaveAssets();
+            }
+#endif
 
             // Update listeners BlackboardKey name
             foreach (var listener in m_Listeners)
@@ -127,7 +149,7 @@ namespace Maple.Blackboards
                    type == typeof(Vector3);
         }
 
-        private static System.Type TypeFromEnum(BlackboardEntryType enumType)
+        public static System.Type TypeFromEnum(BlackboardEntryType enumType)
         {
             switch (enumType)
             {
@@ -154,7 +176,7 @@ namespace Maple.Blackboards
             }
         }
 
-        private static BlackboardEntryType EnumFromType(System.Type type)
+        public static BlackboardEntryType EnumFromType(System.Type type)
         {
             if (type == typeof(bool))
                 return BlackboardEntryType.Bool;

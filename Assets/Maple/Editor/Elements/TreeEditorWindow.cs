@@ -1,5 +1,3 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
@@ -171,7 +169,7 @@ namespace Maple.Editor
             if (!runtime)
             {
                 // Find assets in the project panel using editor based searching
-                assets = Utilities.Utilities.FindAssetsOfType<BehaviourTree>();
+                assets = Maple.Utilities.Utilities.FindAssetsOfType<BehaviourTree>();
             }
             else if (EditorApplication.isPlaying)
             {
