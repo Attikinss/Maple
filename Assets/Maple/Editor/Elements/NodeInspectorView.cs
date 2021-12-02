@@ -98,18 +98,8 @@ namespace Maple.Editor
                 foreach (var item in entries)
                     menuChoices.Add(item.Name);
 
-                FieldInfo selectionInfo = member?.GetType()?.GetField("Selection");
-                if (selectionInfo != null)
-                {
-                    int selection = (int)selectionInfo.GetValue(member);
-                    selectionInfo.SetValue(member, EditorGUILayout.Popup("Value", selection, menuChoices.ToArray()));
-
-                    FieldInfo valueInfo = member.GetType().GetField("Value");
-                    valueInfo?.SetValue(member, entries[selection].Value);
-
-                    FieldInfo nameInfo = member.GetType().GetField("Name");
-                    nameInfo?.SetValue(member, entries[selection].Name);
-                }
+                member.Selection = EditorGUILayout.Popup("Value", member.Selection, menuChoices.ToArray());
+                member.UpdateEntryInfo(entries.Find(entry => entry.Name == menuChoices[member.Selection]));
             }
         }
 

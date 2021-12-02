@@ -9,14 +9,20 @@ namespace Maple.Blackboards
 
         public override void UpdateEntryInfo(BlackboardEntry entry)
         {
-            if (!(entry.Value is string))
+            if (entry != null)
             {
-                Debug.LogError($"({Name}): Cannot update BlackboardKey - type mismatch!");
-                return;
+                if (entry.Name == Name && (string)entry.Value == m_Value)
+                    return;
+
+                if (!(entry.Value is string))
+                {
+                    Debug.LogError($"({Name}): Cannot update BlackboardKey - type mismatch!");
+                    return;
+                }
             }
 
-            Name = entry.Name;
-            m_Value = (string)entry.Value;
+            Name = entry == null ? string.Empty : entry.Name;
+            m_Value = entry == null ? string.Empty : (string)entry.Value;
         }
 
         public override T GetValue<T>()

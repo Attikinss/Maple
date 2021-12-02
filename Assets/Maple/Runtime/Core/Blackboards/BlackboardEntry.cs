@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Maple.Blackboards
@@ -9,7 +10,7 @@ namespace Maple.Blackboards
     public sealed class BlackboardEntry : ScriptableObject
     {
         public string Name { get; private set; }
-        public object Value { get => m_Value; }
+        public object Value { get => m_Value != null ? m_Value : GetDefaultValue(); }
         public bool Expand { get; set; }
 
         private object m_Value;
@@ -128,6 +129,11 @@ namespace Maple.Blackboards
         {
             // Disconnect the listeners
             m_Listeners.Clear();
+        }
+
+        public object GetDefaultValue()
+        {
+            return null;// Activator.CreateInstance(TypeFromEnum(ValueType));
         }
 
         private void OnValueChanged(object value)
