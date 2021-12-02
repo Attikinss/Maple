@@ -12,6 +12,9 @@ namespace Maple.Blackboards
         
         public BlackboardEntryType KeyType = BlackboardEntryType.None;
 
+        [HideInInspector]
+        public int Selection = 0;
+
         public abstract void UpdateEntryInfo(BlackboardEntry entry);
         public abstract T GetValue<T>();
     }

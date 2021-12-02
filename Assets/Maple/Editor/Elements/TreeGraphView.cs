@@ -104,6 +104,7 @@ namespace Maple.Editor
             m_CurrentTree.Nodes.ForEach(node =>
             {
                 var newNode = GraphNode.Construct(node, AssetDatabase.GetAssetPath(Resources.Load<VisualTreeAsset>("UI Documents/GraphNode")));
+                node.Initialise();
                 AddElement(newNode);
             });
 

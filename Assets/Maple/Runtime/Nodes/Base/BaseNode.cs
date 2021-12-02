@@ -31,6 +31,7 @@ namespace Maple.Nodes
 
         public virtual string IconPath { get; } = "Icons/User";
 
+        public List<BlackboardKey> BlackboardKeys { get => m_BlackboardKeys; }
         private List<BlackboardKey> m_BlackboardKeys = new List<BlackboardKey>();
 
         protected abstract void OnEnter();
@@ -43,7 +44,7 @@ namespace Maple.Nodes
 
             node.Owner = owner;
             node.name = string.IsNullOrWhiteSpace(title) ? typeof(T).Name : title;
-            node.Initialise(); 
+            node.Initialise();
 
             return node;
         }
@@ -52,7 +53,7 @@ namespace Maple.Nodes
         {
             var newNode = CreateInstance(node.GetType()) as BaseNode;
             newNode.name = !string.IsNullOrWhiteSpace(node.name) ? node.name : newNode.GetType().Name;
-            newNode.Guid = System.Guid.NewGuid().ToString();
+            newNode.Initialise();
 
             return newNode;
         }
@@ -74,10 +75,8 @@ namespace Maple.Nodes
 
         public void Initialise()
         {
-            Guid = System.Guid.NewGuid().ToString();
-
-            if (Owner?.Blackboard == null)
-                return;
+            if (Guid?.Length == 0)
+                Guid = System.Guid.NewGuid().ToString();
 
             var bbkFields = GetType().GetFields().Where(field => field.FieldType.IsSubclassOf(typeof(BlackboardKey))).ToList();
 
@@ -124,13 +123,22 @@ namespace Maple.Nodes
 
                 // Add node's blackboard key to collection
                 m_BlackboardKeys.Add(keyValue);
+            }
 
-                // Find corresponding blackboard entry
-                var bbEntry = Owner.Blackboard.Entries.Find(entry => entry.Name == keyValue.Name && entry.ValueType == keyValue.KeyType);
+            if (Owner?.Blackboard != null)
+                LinkToBlackboard();
+        }
+
+        public void LinkToBlackboard()
+        {
+            // Find corresponding blackboard entry
+            foreach (var key in m_BlackboardKeys)
+            {
+                var bbEntry = Owner.Blackboard.Entries.Find(entry => entry.Name == key.Name && entry.ValueType == key.KeyType);
 
                 // Add blackboard key as a listener for on value change updates
                 if (bbEntry != null)
-                    bbEntry.AddListener(keyValue);
+                    bbEntry.AddListener(key);
             }
         }
 

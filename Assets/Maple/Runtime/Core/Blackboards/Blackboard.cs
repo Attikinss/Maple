@@ -97,6 +97,19 @@ namespace Maple.Blackboards
             entry.SetValue(newValue);
         }
 
+        public List<BlackboardEntry> GetEntriesOfType(BlackboardEntryType type)
+        {
+            var entryList = new List<BlackboardEntry>();
+
+            foreach (var entry in Entries)
+            {
+                if (entry.ValueType == type)
+                    entryList.Add(entry);
+            }
+
+            return entryList;
+        }
+
         private BlackboardEntry FindEntryByName<T>(string name) => FindEntryByName(name, typeof(T));
 
         private BlackboardEntry FindEntryByName(string name, System.Type valueType)
@@ -110,7 +123,6 @@ namespace Maple.Blackboards
 
             return null;
         }
-
 
         private void AddToAsset(BlackboardEntry entry)
         {

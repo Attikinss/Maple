@@ -158,8 +158,19 @@ namespace Maple
 
         public void SetBlackboard(Blackboard blackboard)
         {
-            if (m_Blackboard != blackboard)
-                m_Blackboard = blackboard;
+            if (m_Blackboard != blackboard && m_Blackboard != null)
+            {
+                foreach (var entry in m_Blackboard.Entries)
+                    entry.ClearListeners();
+            }
+
+            m_Blackboard = blackboard;
+
+            if (m_Blackboard != null)
+            {
+                foreach (var node in Nodes)
+                    node.LinkToBlackboard();
+            }
         }
 
         public void SetAgent(Agent agent)

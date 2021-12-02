@@ -85,7 +85,8 @@ namespace Maple.Editor
             if (Event.current.isMouse)
                 m_AddEntry = false;
 
-            TreeGraphView.Instance.CurrentTree.SetBlackboard(m_Target);
+            if (TreeGraphView.Instance.CurrentTree.Blackboard != m_Target)
+                TreeGraphView.Instance.CurrentTree.SetBlackboard(m_Target);
         }
 
         private void CreateEntry(BlackboardEntryType type)

@@ -1,4 +1,5 @@
 ﻿using Maple.Nodes;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -23,17 +24,17 @@ namespace Maple.Editor
             if (fields != null)
             {
                 foreach (var field in fields)
-            {
-                if ((field.IsPublic && !field.CustomAttributes.Any(attrib => attrib.AttributeType == typeof(HideInInspector))) ||
-                    (!field.IsPublic && field.CustomAttributes.Any(attrib => attrib.AttributeType == typeof(SerializeField))))
                 {
-                    // Ensure base node fields are displayed before subclass fields
-                    if (m_SelectedNode.GetType().BaseType.GetField(field.Name) == null)
-                        m_FieldElements.Add(field);
-                    else
-                        m_FieldElements.Insert(0, field);
+                    if ((field.IsPublic && !field.CustomAttributes.Any(attrib => attrib.AttributeType == typeof(HideInInspector))) ||
+                        (!field.IsPublic && field.CustomAttributes.Any(attrib => attrib.AttributeType == typeof(SerializeField))))
+                    {
+                        // Ensure base node fields are displayed before subclass fields
+                        if (m_SelectedNode.GetType().GetField(field.Name) == null)
+                            m_FieldElements.Add(field);
+                        else
+                            m_FieldElements.Insert(0, field);
+                    }
                 }
-            }
             }
         }
 
@@ -47,17 +48,69 @@ namespace Maple.Editor
 
             foreach (var field in m_FieldElements)
             {
-                if (IsBlackboardKeyField(field))
+                if (!IsBlackboardKeyField(field))
                 {
+                    // Remove hungarian notation for presentation
+                    string formattedName = field.Name.TrimStart('m', '_');
 
-                }
-                else
-                {
+                    // Obtain an editable property version of the current field
+                    SerializedObject serialisedObj = new SerializedObject(m_SelectedNode);
+                    SerializedProperty property = serialisedObj.FindProperty(field.Name);
 
+                    // Draw the field and update value
+                    EditorGUILayout.PropertyField(property, new GUIContent(formattedName), true);
+                    serialisedObj.ApplyModifiedProperties();
                 }
             }
 
+            foreach (var key in m_SelectedNode.BlackboardKeys)
+            {
+                var matchingBlackboardEntries = m_SelectedNode.Owner?.Blackboard?.GetEntriesOfType(key.KeyType);
+
+                string fieldName = "";
+                foreach (var field in m_FieldElements)
+                {
+                    var fieldVal = field.GetValue(m_SelectedNode) as Blackboards.BlackboardKey;
+                    if (fieldVal != null && fieldVal.Name == key.Name)
+                        fieldName = field.Name.TrimStart('m', '_');
+                }
+
+                GUILayout.BeginVertical(fieldName, "window");
+                CreateBlackboardField(key, matchingBlackboardEntries);
+                GUILayout.EndVertical();
+            }
+
             GUILayout.EndVertical();
+        }
+
+        private void CreateBlackboardField(Blackboards.BlackboardKey member, List<Blackboards.BlackboardEntry> entries)
+        {
+            if (entries == null || entries.Count == 0)
+            {
+                string[] dummy = { "-" };
+                EditorGUILayout.Popup("Value", 0, dummy);
+            }
+            else
+            {
+                List<string> menuChoices = new List<string>();
+                menuChoices.Add("-");
+
+                foreach (var item in entries)
+                    menuChoices.Add(item.Name);
+
+                FieldInfo selectionInfo = member?.GetType()?.GetField("Selection");
+                if (selectionInfo != null)
+                {
+                    int selection = (int)selectionInfo.GetValue(member);
+                    selectionInfo.SetValue(member, EditorGUILayout.Popup("Value", selection, menuChoices.ToArray()));
+
+                    FieldInfo valueInfo = member.GetType().GetField("Value");
+                    valueInfo?.SetValue(member, entries[selection].Value);
+
+                    FieldInfo nameInfo = member.GetType().GetField("Name");
+                    nameInfo?.SetValue(member, entries[selection].Name);
+                }
+            }
         }
 
         private bool IsBlackboardKeyField(FieldInfo field)
