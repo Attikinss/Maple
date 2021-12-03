@@ -2,6 +2,7 @@ using Maple.Blackboards;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
 
 namespace Maple.Nodes
@@ -49,9 +50,10 @@ namespace Maple.Nodes
             return node;
         }
 
-        public static BaseNode Create(BaseNode node)
+        public static BaseNode Create(BaseNode node, BehaviourTree owner = null)
         {
             var newNode = CreateInstance(node.GetType()) as BaseNode;
+            newNode.Owner = owner;
             newNode.name = !string.IsNullOrWhiteSpace(node.name) ? node.name : newNode.GetType().Name;
             newNode.Initialise();
 
@@ -75,46 +77,51 @@ namespace Maple.Nodes
 
         public void Initialise()
         {
-            if (Guid?.Length == 0)
+            if (String.IsNullOrWhiteSpace(Guid))
                 Guid = System.Guid.NewGuid().ToString();
 
-            var bbkFields = GetType().GetFields().Where(field => field.FieldType.IsSubclassOf(typeof(BlackboardKey))).ToList();
+            m_BlackboardKeys.RemoveAll(key => key == null);
 
+            var bbkFields = GetType().GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance).Where(field =>
+                field.FieldType.IsSubclassOf(typeof(BlackboardKey))).ToList();
+             
             foreach (var field in bbkFields)
             {
-                var keyValue = field.GetValue(this) as BlackboardKey;
+                var keyField = field.GetValue(this);
+                var keyValue = keyField as BlackboardKey;
+
                 if (keyValue == null)
                 {
                     // Gross.
                     var fieldType = field.FieldType;
                     if (fieldType == typeof(BlackboardKeyBool))
                     {
-                        keyValue = new BlackboardKeyBool();
+                        keyValue = ScriptableObject.CreateInstance<BlackboardKeyBool>();
                         keyValue.KeyType = BlackboardEntryType.Bool;
                     }
                     else if (fieldType == typeof(BlackboardKeyFloat))
                     {
-                        keyValue = new BlackboardKeyFloat();
+                        keyValue = ScriptableObject.CreateInstance<BlackboardKeyFloat>();
                         keyValue.KeyType = BlackboardEntryType.Float;
                     }
                     else if (fieldType == typeof(BlackboardKeyGameObject))
                     {
-                        keyValue = new BlackboardKeyGameObject();
+                        keyValue = ScriptableObject.CreateInstance<BlackboardKeyGameObject>();
                         keyValue.KeyType = BlackboardEntryType.GameObject;
                     }
                     else if (fieldType == typeof(BlackboardKeyInt))
                     {
-                        keyValue = new BlackboardKeyInt();
+                        keyValue = ScriptableObject.CreateInstance<BlackboardKeyInt>();
                         keyValue.KeyType = BlackboardEntryType.Int;
                     }
                     else if (fieldType == typeof(BlackboardKeyString))
                     {
-                        keyValue = new BlackboardKeyString();
+                        keyValue = ScriptableObject.CreateInstance<BlackboardKeyString>();
                         keyValue.KeyType = BlackboardEntryType.String;
                     }
                     else if (fieldType == typeof(BlackboardKeyVector))
                     {
-                        keyValue = new BlackboardKeyVector();
+                        keyValue = ScriptableObject.CreateInstance<BlackboardKeyVector>();
                         keyValue.KeyType = BlackboardEntryType.Vector;
                     }
 
@@ -122,7 +129,8 @@ namespace Maple.Nodes
                 }
 
                 // Add node's blackboard key to collection
-                m_BlackboardKeys.Add(keyValue);
+                if (m_BlackboardKeys.Find(key => key.Name == keyValue.Name && key.KeyType == keyValue.KeyType) == null)
+                    m_BlackboardKeys.Add(keyValue);
             }
 
             if (Owner?.Blackboard != null)
@@ -135,9 +143,9 @@ namespace Maple.Nodes
             foreach (var key in m_BlackboardKeys)
             {
                 var bbEntry = Owner.Blackboard.Entries.Find(entry => entry.Name == key.Name && entry.ValueType == key.KeyType);
-
+                 
                 // Add blackboard key as a listener for on value change updates
-                if (bbEntry != null)
+                if (bbEntry != null) 
                     bbEntry.AddListener(key);
             }
         }

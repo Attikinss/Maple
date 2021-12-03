@@ -33,6 +33,16 @@ namespace Maple.Blackboards
             return blackboard;
         }
 
+        public Blackboard Clone()
+        {
+            var clone = Create($"[Clone] {name}");
+
+            foreach (var entry in Entries)
+                clone.AddEntry(entry.Name, entry.Value);
+
+            return clone;
+        }
+
         public void AddEntry<T>(string name, T entryValue)
         {
             // Entries with the same name are allowed only if their value type is different

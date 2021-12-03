@@ -67,7 +67,9 @@ namespace Maple
             }
             
             // Deep clone tree
-            RuntimeTree = m_Tree.Clone($"[{gameObject.name}] {m_Tree.name}", this);
+            RuntimeTree = m_Tree.Clone($"[{gameObject.name}] {m_Tree.name}", this, true);
+            RuntimeTree.Blackboard.UpdateEntryValue<string>("Moving", "Oh suh dude");
+            RuntimeTree.Blackboard.UpdateEntryValue<string>("Waiting", "ya ya yeet");
         }
 
         public void DetectNoise(object source, float loudness)

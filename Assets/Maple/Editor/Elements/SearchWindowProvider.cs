@@ -207,7 +207,7 @@ namespace Maple.Editor
             Vector2 graphMousePosition = graphView.contentViewContainer.WorldToLocal(windowMousePosition);
 
             NodeEntry nodeEntry = (NodeEntry)entry.userData;
-            GraphNode newNode = GraphNode.Construct(BaseNode.Create(nodeEntry.Node.RuntimeNode), AssetDatabase.GetAssetPath(Resources.Load<VisualTreeAsset>("UI Documents/GraphNode")));
+            GraphNode newNode = GraphNode.Construct(BaseNode.Create(nodeEntry.Node.RuntimeNode, graphView?.CurrentTree), AssetDatabase.GetAssetPath(Resources.Load<VisualTreeAsset>("UI Documents/GraphNode")));
             newNode.SetPosition(new Rect(graphMousePosition, Vector2.zero));
 
             if (ConnectedPort != null)

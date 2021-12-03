@@ -23,7 +23,7 @@ namespace Maple.Blackboards
         public static BlackboardEntry Create<T>(string name, T value, Blackboard owner)
         {
             // Ensure valid type is used
-            if (!TypeValid<T>())
+            if (!TypeValid(value))
             {
                 Debug.LogError($"(Blackboard Entry - {name}): Cannot create entry - type not supported! [{typeof(T).Name}]");
                 return null;
@@ -39,7 +39,8 @@ namespace Maple.Blackboards
             // Create instance and update values
             var entry = ScriptableObject.CreateInstance<BlackboardEntry>();
             entry.Name = name;
-            entry.ValueType = EnumFromType(typeof(T));
+            entry.name = name;
+            entry.ValueType = EnumFromType(value.GetType());
             entry.Owner = owner;
 
             // Ensure a value is assigned, even if it is a default value
@@ -94,7 +95,7 @@ namespace Maple.Blackboards
             }
 
             // Ensure type is valid
-            if (!TypeValid<T>())
+            if (!TypeValid(value))
             {
                 Debug.LogError($"(Blackboard Entry - {Name}): Cannot change value - type not supported! [{typeof(T).Name}]");
                 return;
@@ -133,7 +134,16 @@ namespace Maple.Blackboards
 
         public object GetDefaultValue()
         {
-            return null;// Activator.CreateInstance(TypeFromEnum(ValueType));
+            switch (ValueType)
+            {
+                case BlackboardEntryType.Bool:          return false;
+                case BlackboardEntryType.Float:         return 0.0f;
+                case BlackboardEntryType.GameObject:    return null;
+                case BlackboardEntryType.Int:           return 0;
+                case BlackboardEntryType.String:        return "";
+                case BlackboardEntryType.Vector:        return Vector3.zero;
+                default:                                return null;
+            }
         }
 
         private void OnValueChanged(object value)
@@ -144,9 +154,9 @@ namespace Maple.Blackboards
                 listener.UpdateEntryInfo(this);
         }
 
-        private static bool TypeValid<T>()
+        private static bool TypeValid<T>(T obj)
         {
-            var type = typeof(T);
+            var type = obj.GetType();
             return type == typeof(bool) ||
                    type == typeof(float) ||
                    type == typeof(GameObject) ||

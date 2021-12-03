@@ -75,7 +75,7 @@ namespace Maple
                 Root.Tick();
         }
 
-        public BehaviourTree Clone(string name, Agent owner, bool toDisk = false)
+        public BehaviourTree Clone(string name, Agent owner, bool cloneBlackboard = false, bool toDisk = false)
         {
             // Shallow copy the tree
             BehaviourTree clone = ScriptableObject.Instantiate(this);
@@ -83,7 +83,7 @@ namespace Maple
             clone.SetAgent(owner);
 
             // Clear the nodes linked to the original tree and its nodes
-            clone.ClearNodes();
+            clone.Nodes.Clear();
 
             if (toDisk)
             {
@@ -98,7 +98,15 @@ namespace Maple
 
                 // Ensures (Clone) isn't in the name
                 newNode.name = node.name;
-                
+                newNode.Initialise();
+
+                //for (int i = 0; i < newNode.BlackboardKeys.Count; i++)
+                //{
+                //    newNode.BlackboardKeys[i].Name = node.BlackboardKeys[i].Name;
+                //    newNode.BlackboardKeys[i].KeyType = node.BlackboardKeys[i].KeyType;
+                //    newNode.BlackboardKeys[i].Selection = node.BlackboardKeys[i].Selection;
+                //}
+
                 clone.AddNode(newNode);
             });
 
@@ -152,6 +160,12 @@ namespace Maple
                     decorator.SetChild(childNode);
                 }
             });
+
+            if (cloneBlackboard && m_Blackboard != null)
+            {
+                var blackboard = m_Blackboard.Clone();
+                clone.SetBlackboard(blackboard);
+            }
 
             return clone;
         }

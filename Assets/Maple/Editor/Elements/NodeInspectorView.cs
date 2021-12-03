@@ -63,6 +63,7 @@ namespace Maple.Editor
                 }
             }
 
+            Debug.Log("BlackboardKeys: " + m_SelectedNode.BlackboardKeys.Count);
             foreach (var key in m_SelectedNode.BlackboardKeys)
             {
                 var matchingBlackboardEntries = m_SelectedNode.Owner?.Blackboard?.GetEntriesOfType(key.KeyType);
@@ -93,13 +94,25 @@ namespace Maple.Editor
             else
             {
                 List<string> menuChoices = new List<string>();
-                menuChoices.Add("-");
 
                 foreach (var item in entries)
                     menuChoices.Add(item.Name);
 
-                member.Selection = EditorGUILayout.Popup("Value", member.Selection, menuChoices.ToArray());
-                member.UpdateEntryInfo(entries.Find(entry => entry.Name == menuChoices[member.Selection]));
+                FieldInfo selectionInfo = member?.GetType()?.GetField("Selection");
+                if (selectionInfo != null)
+                {
+                    int selection = (int)selectionInfo.GetValue(member);
+                    selectionInfo.SetValue(member, EditorGUILayout.Popup("Value", selection, menuChoices.ToArray()));
+
+                    FieldInfo valueInfo = member.GetType().GetField("m_Value");
+                    valueInfo.SetValue(member, entries[selection].Value);
+
+                    FieldInfo typeInfo = member.GetType().GetField("KeyType");
+                    typeInfo.SetValue(member, entries[selection].ValueType); 
+
+                    FieldInfo nameInfo = member.GetType().GetField("Name");
+                    nameInfo.SetValue(member, entries[selection].Name);
+                }
             }
         }
 
